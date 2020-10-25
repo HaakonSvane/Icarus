@@ -1,5 +1,5 @@
 from src.alphavantage.alpha_vantage_api.alphavantage import AlphaVantage
-from functools import wraps, update_wrapper
+from functools import wraps
 
 
 def _validate_args(func):
