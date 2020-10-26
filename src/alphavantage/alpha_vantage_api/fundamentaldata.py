@@ -1,11 +1,13 @@
 from src.alphavantage.alpha_vantage_api.alphavantage import AlphaVantage
 import re
+import pathlib
 
 
 # TODO: Mostly only returns json format. Convert to user format.
 class FundamentalData(AlphaVantage):
-    def __init__(self, api_key=None, output_format='json'):
-        super().__init__(api_key, output_format)
+    def __init__(self, api_key=None, output_format='json',
+                 error_log_dir=pathlib.Path(__file__).parent.parent.absolute(), log_errors=True):
+        super().__init__(api_key, output_format, error_log_dir, log_errors)
 
     @AlphaVantage._shape_request
     def get_company_overview(self, symbol):

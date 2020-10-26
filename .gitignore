@@ -269,7 +269,7 @@ dmypy.json
 # pytype static type analyzer
 .pytype/
 
-# profiling data
+# profiling raw_data
 .prof
 
 ### Windows ###

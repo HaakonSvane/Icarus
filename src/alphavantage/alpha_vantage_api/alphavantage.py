@@ -9,13 +9,11 @@ import tabulate
 import pathlib
 from datetime import datetime
 import json
-import codecs
-
 
 class AlphaVantage:
     _API_URL = 'https://www.alphavantage.co/query?'
 
-    def __init__(self, api_key=None, output_format='csv', error_log_dir = pathlib.Path(__file__).parent.parent.absolute(), log_errors=True):
+    def __init__(self, api_key, output_format, error_log_dir, log_errors):
         if not api_key:
             api_key = os.getenv('ALPHAVANTAGE_API_KEY')
 

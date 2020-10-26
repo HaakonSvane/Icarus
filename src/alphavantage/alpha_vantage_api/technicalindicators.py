@@ -1,5 +1,6 @@
 from src.alphavantage.alpha_vantage_api.alphavantage import AlphaVantage
 from functools import wraps
+import pathlib
 
 
 def _validate_args(func):
@@ -47,8 +48,9 @@ class TechnicalIndicators(AlphaVantage):
         'maximum': is_positive_float
     }
 
-    def __init__(self, api_key=None, output_format='json'):
-        super().__init__(api_key, output_format)
+    def __init__(self, api_key=None, output_format='json',
+                 error_log_dir=pathlib.Path(__file__).parent.parent.absolute(), log_errors=True):
+        super().__init__(api_key, output_format, error_log_dir, log_errors)
 
     @AlphaVantage._shape_request
     @_validate_args

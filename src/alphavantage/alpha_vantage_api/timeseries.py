@@ -1,9 +1,12 @@
 from src.alphavantage.alpha_vantage_api.alphavantage import AlphaVantage
+import pathlib
 import re
 
+
 class TimeSeries(AlphaVantage):
-    def __init__(self, api_key=None, output_format='json'):
-        super().__init__(api_key, output_format)
+    def __init__(self, api_key=None, output_format='json',
+                 error_log_dir=pathlib.Path(__file__).parent.parent.absolute(), log_errors=True):
+        super().__init__(api_key, output_format, error_log_dir, log_errors)
 
     @AlphaVantage._shape_request
     def get_intraday(self, symbol, interval, adjusted=True, outputsize='full'):
@@ -58,6 +61,7 @@ class TimeSeries(AlphaVantage):
     @AlphaVantage._shape_request
     def get_quote_endpoint(self, symbol):
         return "GLOBAL_QUOTE"
+
 
 if __name__ == "__main__":
     ts = TimeSeries()
