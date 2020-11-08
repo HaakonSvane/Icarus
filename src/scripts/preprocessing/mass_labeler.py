@@ -1,6 +1,9 @@
-
 from src.scripts.preprocessing.utilities import *
 from src.stocklabeler import labeler as lab
+
+'''
+    Module responsible for labeling the raw data provided by Alpha Vantage.
+'''
 
 
 def calc_from_raw():
@@ -15,6 +18,7 @@ def calc_from_raw():
             for m in range(1, 13):
                 frame.append(load_data(f'label_test/raw/{sym}/{sym}_15min_y{y}m{m}.csv'))
         frame = pd.concat(frame, ignore_index=True)
+        # Data from AV is reversed in the sense that it the first entry is the most recent in time. This code flips it.
         frame = frame.reindex(index=frame.index[::-1])
         frame = frame.reset_index(drop=True)
 

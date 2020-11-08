@@ -4,18 +4,6 @@ from pathlib import Path
 DATA_DIR = Path(__file__).parent.parent.parent.parent / 'data'
 
 
-
-
-
-
-'''
-
-
-
-
-
-'''
-
 def load_data(path: str):
     '''
     :param pathlib.Path path: path to file to load.
