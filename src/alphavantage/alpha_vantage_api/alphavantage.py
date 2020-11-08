@@ -129,7 +129,6 @@ class AlphaVantage:
                         with open(self.error_log_dir / 'API_ERR_LOG.json', 'w', encoding='utf-8') as f:
                             json.dump(err_json, f, ensure_ascii=False, indent=4)
                     return
-
         return df
 
     def save_to_csv(self, dframe : pd.DataFrame, output_path, separator=',', show_ind=True):
