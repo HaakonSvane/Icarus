@@ -21,7 +21,7 @@ class CustomLabeler(Labeler):
                    'step': lambda x, x0: 0 if x < x0 else 1,
                    }
 
-    def __init__(self, data: pd.DataFrame, time_window: int, convolution_mode='poly', data_time_col_name='time',
+    def __init__(self, data: pd.DataFrame, time_window: int, data_time_col_name='time',
                  data_price_col_name='close', dt=None):
         super().__init__(data, time_window, data_time_col_name, data_price_col_name, dt)
 
@@ -29,7 +29,6 @@ class CustomLabeler(Labeler):
         self.data_results[CustomLabeler.R_COLS.conv] = np.nan
         self.data_results[CustomLabeler.R_COLS.diff] = np.nan
         self.data_results[CustomLabeler.R_COLS.med] = np.nan
-
 
     @property
     def convolution_window(self):
@@ -77,9 +76,9 @@ class CustomLabeler(Labeler):
         self.data_results[self.R_COLS.conv] = convolve1d(self.data[self.price_col_name],
                                                          np.flip(self.convolution_window), mode=conv_mode)
         dat = None
-        if smooth_result: # Computes a running average over one hour to smooth the price data
-            l = int(1/self.dt)
-            dat = convolve1d(self.data[self.price_col_name], [1/l]*l)
+        if smooth_result:  # Computes a running average over one hour to smooth the price data
+            l = int(1 / self.dt)
+            dat = convolve1d(self.data[self.price_col_name], [1 / l] * l)
         else:
             dat = self.data[self.price_col_name]
 

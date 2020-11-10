@@ -1,5 +1,4 @@
 import pandas as pd
-from dateutil import relativedelta
 
 class Labeler:
 
@@ -10,12 +9,10 @@ class Labeler:
 
     def __init__(self, data : pd.DataFrame, time_window : int, data_time_col_name : str, data_price_col_name : str, dt):
         '''
-
         :param data: Pandas DataFrame containing the timeseries data. Must contain
-        :param time_window: Number of hours (integer) used as the window in the convolutions.
+        :param int time_window: Number of hours used as the window in the convolutions.
         :param data_time_col_name: Name of the column in the DataFrame referring to the time data.
         :param data_close_col_name: Name of the column in the DataFrame referring to the price
-
         '''
 
         self.data = data

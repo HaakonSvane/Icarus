@@ -7,11 +7,11 @@ from src.stocklabeler import labeler as lab
 
 
 def calc_from_raw():
-    p = Path('label_test/raw')
-    subdirectories = [x for x in p.iterdir() if x.is_dir()]
+    path_raw = DATA_DIR / 'preprocessing' / 'raw'
+    subdirectories = [x for x in path_raw.iterdir() if x.is_dir()]
 
-    for dir in subdirectories:
-        sym = dir.stem
+    for d in subdirectories:
+        sym = d.stem
         frame = []
         print(f'Computing labels for {sym}...')
         for y in range(1, 3):

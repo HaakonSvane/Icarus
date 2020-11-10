@@ -132,9 +132,28 @@ class AlphaVantage:
         return df
 
     def save_to_csv(self, dframe : pd.DataFrame, output_path, separator=',', show_ind=True):
+        '''
+        Saves the given dataframe as a .csv formatted file at the given path.
+
+        :param pd.DataFrame dframe: dataframe to save.
+        :param str output_path: path to save file.
+        :param str separator: separator used in the csv file.
+        :param bool show_ind: including the index of the data in the output file or not.
+        :return: None
+        '''
+
         dframe.to_csv(output_path, sep=separator, index=show_ind)
 
     def save_to_json(self, dframe : pd.DataFrame, output_path, show_ind=True):
+        '''
+        Saves the given dataframe as a .json formatted file at the given path.
+
+        :param pd.DataFrame dframe: dataframe to save.
+        :param str output_path: path to save file.
+        :param bool show_ind: including the index of the data in the output file or not.
+        :return: None
+        '''
+
         cols_as_dict = dframe.apply(dict, axis=1)
         combined = cols_as_dict.groupby(cols_as_dict.index).apply(list)
         combined.to_json(output_path, index=show_ind, orient='index')

@@ -2,23 +2,31 @@ import pandas as pd
 from matplotlib import pyplot as plt
 import seaborn as sns
 
-from src.scripts.preprocessing import utilities as util
+from src.scripts.preprocessing.utilities import *
 
 '''
     Module responsible for plotting labeled data using the seaborn wrapper for nice plots.
 '''
 
+
 def plot_result_data(label_data):
+    '''
+    Given a properly formatted DataFrame of labeled stock data, plots the resulting data.
+
+    :param pd.DataFrame label_data: pandas DataFrame containing fully labeled data from the labeling library
+    :return: None
+    '''
+
     sns.set()
     fig, axes = plt.subplots(1, 1, sharex=True)
     plot = sns.lineplot(ax=axes, data=label_data, x=label_data.index, y='close', legend='brief')
     lim = axes.get_ylim()
     axes.fill_between(label_data.index.values, label_data['close'], lim[0], where=label_data['label'] == 'S',
-                         color='lightcoral', interpolate=True, label="Sell region")
+                      color='lightcoral', interpolate=True, label="Sell region")
     axes.fill_between(label_data.index.values, label_data['close'], lim[0], where=label_data['label'] == 'B',
-                         color='yellowgreen', interpolate=True, label="Buy region")
+                      color='yellowgreen', interpolate=True, label="Buy region")
     axes.fill_between(label_data.index.values, label_data['close'], lim[0], where=label_data['label'] == 'H',
-                         color='gold', interpolate=True, alpha=0.5, label="Hold region")
+                      color='gold', interpolate=True, alpha=0.5, label="Hold region")
 
     plot.set(ylabel='Close price')
     axes.set_xlim(left=label_data.index.values[0], right=label_data.index.values[-1])
@@ -35,8 +43,15 @@ def plot_result_data(label_data):
     plt.show()
 
 
-
 def plot_comp_data(label_data):
+
+    '''
+    Plots the computational data from using the Labeler.CustomLabeler labeler.
+
+    :param pd.DataFrame label_data: dataframe obtained from the Labeler.CustomLabeler.calculate() function.
+    :return: None
+    '''
+
     sns.set()
 
     fig, axes = plt.subplots(2, 1, sharex=True)
@@ -79,8 +94,6 @@ def plot_comp_data(label_data):
     plt.show()
 
 
-
 if __name__ == '__main__':
-    frame = util.load_data(util.DATA_DIR)
+    frame = load_data(DATA_DIR / 'preprocessing' / 'labeled' / 'AAPL_15min.csv')
     plot_result_data(frame)
-
