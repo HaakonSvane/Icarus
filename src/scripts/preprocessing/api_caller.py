@@ -4,8 +4,10 @@ from dateutil.relativedelta import relativedelta
 import pandas as pd
 import os
 
+import config
 from src.alphavantage import alpha_vantage_api as api
 from src.scripts.preprocessing.utilities import *
+
 
 '''
     Module responsible for making API calls to Alpha Vantage. Keeps track of files that are already fetched
@@ -41,9 +43,9 @@ def trim_listings(frame, last_n_years=2):
 
 
 if __name__ == "__main__":
-    path_sp = DATA_DIR / 'preprocessing' / 'listings' / 'SP500_companies.csv'
-    path_all = DATA_DIR / 'preprocessing' / 'listings' / 'alpha_vantage_companies.csv'
-    path_raw = DATA_DIR / 'preprocessing' / 'raw'
+    path_sp = config.DATA_DIR / 'preprocessing' / 'listings' / 'SP500_companies.csv'
+    path_all = config.DATA_DIR / 'preprocessing' / 'listings' / 'alpha_vantage_companies.csv'
+    path_raw = config.DATA_DIR / 'preprocessing' / 'raw'
 
     companies_to_find = pd.read_csv(path_sp, index_col=None)
     all_companies = pd.read_csv(path_all, index_col=None)

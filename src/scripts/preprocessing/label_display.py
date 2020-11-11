@@ -2,6 +2,8 @@ import pandas as pd
 from matplotlib import pyplot as plt
 import seaborn as sns
 
+import config
+from src.scripts.preprocessing.data_labeler import *
 from src.scripts.preprocessing.utilities import *
 
 '''
@@ -95,5 +97,7 @@ def plot_comp_data(label_data):
 
 
 if __name__ == '__main__':
-    frame = load_data(DATA_DIR / 'preprocessing' / 'labeled' / 'AAPL_15min.csv')
-    plot_result_data(frame)
+    comp = label_data(which=['AAPL', 'GOOGL', 'FB'], save=False, return_computations=True)
+    for c in comp:
+        plot_comp_data(c)
+        pass

@@ -2,7 +2,6 @@ import pandas as pd
 
 
 def get_dataset(name, slice_len):
-    
     data_15min = pd.read_csv(name)
     # print(len(data_15min))
     data_15min.loc[data_15min.label == 'B', 'label'] = int(0)

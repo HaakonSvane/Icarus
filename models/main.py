@@ -5,11 +5,14 @@ import torch.nn as nn
 import torch.utils.data as data
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
+from pathlib import Path
 
-from dataset import get_dataset
-from models import RNN
-from models import TCN
+import config
+from models.dataset import get_dataset
+from models.model import RNN
+from models.model import TCN
 
+show_epoch_plots = True
 
 class TorchDataset(data.Dataset):
     def __init__(self, dataset_x, dataset_y):
@@ -24,7 +27,7 @@ class TorchDataset(data.Dataset):
 
 
 # hyper parameters
-slice_len = 100
+slice_len = 1000
 BATCH_SIZE = 32
 learning_rate = 0.001
 EPOCH = 200
@@ -42,18 +45,18 @@ channel_seq = [nhid] * LEVEL
 
 INPUT_SIZE = 5
 CLASSES = 3
-# model = RNN(INPUT_SIZE, HIDDEN_SIZE, LAYER, CLASSES)
+model = RNN(INPUT_SIZE, HIDDEN_SIZE, LAYER, CLASSES)
 model = TCN(INPUT_SIZE, CLASSES, channel_seq, KERNEL_SIZE, 0)
 
 
-path = r'./labeled/'
-name_all = glob.glob(os.path.join(path, "*.csv"))
-name_all = name_all[:]
+path = config.DATA_DIR / 'training' / 'labeled' / '80H_WIN'
+name_all = [f for f in path.iterdir() if f.is_file()]
 
 x_train_all = []
 x_test_all = []
 y_train_all = []
 y_test_all = []
+
 for name in name_all:
     X, Y = get_dataset(name, slice_len)
     X_tensor = torch.Tensor(X)
@@ -122,10 +125,11 @@ for epoch in range(EPOCH):
 
     if epoch % 10 == 0:
         print('epoch:{:d} \ttrain loss:{:f} \ttrain accuracy:{:f} \ttest loss:{:f} \ttest accuracy:{:f}'.format(epoch, loss_epoch.item(), accuracy, loss_test, accuracy_test))
-        plt.plot(y_test_all[:slice_len])
-        plt.plot(y_pred_test[:slice_len])
-        plt.title(epoch)
-        plt.show()
+        if show_epoch_plots:
+            plt.plot(y_test_all[:slice_len])
+            plt.plot(y_pred_test[:slice_len])
+            plt.title(epoch)
+            plt.show()
 
 plt.subplot(221)
 plt.plot(loss_list)
