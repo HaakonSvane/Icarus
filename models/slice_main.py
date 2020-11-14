@@ -1,18 +1,30 @@
-import glob
-import os
+<<<<<<< Updated upstream:models/slice_main.py
+# B=0, H=1, S=2
+# If sample = 2000, it will generate 2000-320+1=1681 samples, 1344 for training and 337 for testing.
+sample = 1000
+
+=======
+>>>>>>> Stashed changes:models/main.py
 import torch
 import torch.nn as nn
 import torch.utils.data as data
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
-from pathlib import Path
+<<<<<<< Updated upstream:models/slice_main.py
+
+=======
+>>>>>>> Stashed changes:models/main.py
 
 import config
-from models.dataset import get_dataset
-from models.model import RNN
-from models.model import TCN
+from slice import get_slice
+from slice_models import LSTM
+from slice_models import GRU
+from slice_models import TCN
 
-show_epoch_plots = True
+<<<<<<< Updated upstream:models/slice_main.py
+=======
+show_epoch_plots = False
+>>>>>>> Stashed changes:models/main.py
 
 class TorchDataset(data.Dataset):
     def __init__(self, dataset_x, dataset_y):
@@ -27,38 +39,56 @@ class TorchDataset(data.Dataset):
 
 
 # hyper parameters
-slice_len = 1000
+slice_len = 320
 BATCH_SIZE = 32
-learning_rate = 0.001
-EPOCH = 200
+LR = 0.001
+EPOCH = 500
+torch.manual_seed(1)
 
 # LSTM
 HIDDEN_SIZE = 5
 LAYER = 2
 
-# CNN
+# TCN
 KERNEL_SIZE = 7
-LEVEL = 3
-nhid = 1
-channel_seq = [nhid] * LEVEL
+LEVEL = 6
+NHID = 2
+channel_seq = [NHID] * LEVEL
 
 
 INPUT_SIZE = 5
 CLASSES = 3
+<<<<<<< Updated upstream:models/slice_main.py
+=======
 model = RNN(INPUT_SIZE, HIDDEN_SIZE, LAYER, CLASSES)
-model = TCN(INPUT_SIZE, CLASSES, channel_seq, KERNEL_SIZE, 0)
+#model = TCN(INPUT_SIZE, CLASSES, channel_seq, KERNEL_SIZE, 0)
+>>>>>>> Stashed changes:models/main.py
 
+# model = LSTM(INPUT_SIZE, HIDDEN_SIZE, LAYER, CLASSES)
+# model = GRU(INPUT_SIZE, HIDDEN_SIZE, LAYER, CLASSES)
+model = TCN(INPUT_SIZE, CLASSES, channel_seq, KERNEL_SIZE, 0)
 
 path = config.DATA_DIR / 'training' / 'labeled' / '80H_WIN'
 name_all = [f for f in path.iterdir() if f.is_file()]
+<<<<<<< Updated upstream:models/slice_main.py
+name_all = name_all[:1]
+print(name_all)
+=======
+name_all = name_all[1:2]
+>>>>>>> Stashed changes:models/main.py
+
 
 x_train_all = []
 x_test_all = []
 y_train_all = []
 y_test_all = []
-
 for name in name_all:
+<<<<<<< Updated upstream:models/slice_main.py
+    X, Y = get_slice(name, slice_len, sample)
+=======
     X, Y = get_dataset(name, slice_len)
+    print(name)
+>>>>>>> Stashed changes:models/main.py
     X_tensor = torch.Tensor(X)
     Y_tensor = torch.Tensor(Y).to(dtype=torch.int64)
     x_train, x_test, y_train, y_test = train_test_split(X_tensor, Y_tensor, test_size=0.2, random_state=1)
@@ -73,34 +103,47 @@ y_train_all = torch.cat(y_train_all, dim=0)
 y_test_all = torch.cat(y_test_all, dim=0)
 print(x_train_all.shape)
 print(x_test_all.shape)
-print(y_train_all.shape)
-print(y_test_all.shape)
+train_unique, train_count = torch.unique(y_train_all, return_counts=True)
+train_weight = torch.true_divide(train_count, int(y_train_all.size(0)))
+print(y_train_all.shape, train_unique, train_count, train_weight)
+test_unique, test_count = torch.unique(y_test_all, return_counts=True)
+test_weight = torch.true_divide(test_count, int(y_test_all.size(0)))
+print(y_test_all.shape, test_unique, test_count, test_weight)
 
+CE_weight = torch.true_divide(1, train_weight)
 
-train_length = x_train_all.size(0) * x_train_all.size(1)
-test_length = x_test_all.size(0) * x_test_all.size(1)
+print('cuda =', torch.cuda.is_available())
+if torch.cuda.is_available():
+    model.cuda()
+    x_train_all = x_train_all.cuda()
+    x_test_all = x_test_all.cuda()
+    y_train_all = y_train_all.cuda()
+    y_test_all = y_test_all.cuda()
+    CE_weight = CE_weight.cuda()
 
 
 dataset = TorchDataset(x_train_all, y_train_all)
 loader = data.DataLoader(dataset=dataset, batch_size=BATCH_SIZE, shuffle=True)
 
-criterion = nn.CrossEntropyLoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+criterion = nn.CrossEntropyLoss(weight=CE_weight)
+optimizer = torch.optim.Adam(model.parameters(), lr=LR)
 
 loss_list = []
 accuracy_list = []
 loss_test_list = []
 accuracy_test_list = []
 for epoch in range(EPOCH):
+    y_test_all = y_test_all.cuda()
     accuracy_count = 0
     loss_epoch = 0
+
+    # if epoch > 1 and epoch % 100 == 0:
+    #     for p in optimizer.param_groups:
+    #         p['lr'] *= 0.8
 
     for batch_num, (batch_x, batch_y) in enumerate(loader):
         optimizer.zero_grad()
         outputs = model(batch_x)
-
-        outputs = outputs.view(len(batch_y) * slice_len, -1)
-        batch_y = batch_y.view(len(batch_y) * slice_len)
         loss = criterion(outputs, batch_y)
         loss.backward()
         optimizer.step()
@@ -108,32 +151,34 @@ for epoch in range(EPOCH):
         batch_y_pred = outputs.argmax(dim=1)
         accuracy_count = accuracy_count + sum(torch.eq(batch_y, batch_y_pred)).item()
         loss_epoch = loss_epoch + loss
-        accuracy = accuracy_count/train_length
 
+    accuracy = accuracy_count/len(y_train_all)
     loss_list.append(loss_epoch.item())
     accuracy_list.append(accuracy)
 
     with torch.no_grad():
         outputs_test = model(x_test_all)
-        outputs_test = outputs_test.view(test_length, -1)
-        y_test_all = y_test_all.view(test_length)
         loss_test = criterion(outputs_test, y_test_all)
         y_pred_test = outputs_test.argmax(dim=1)
-        accuracy_test = sum(torch.eq(y_test_all, y_pred_test)).item()/test_length
+        accuracy_test = sum(torch.eq(y_test_all, y_pred_test)).item()/len(y_test_all)
         loss_test_list.append(loss_test)
         accuracy_test_list.append(accuracy_test)
 
     if epoch % 10 == 0:
         print('epoch:{:d} \ttrain loss:{:f} \ttrain accuracy:{:f} \ttest loss:{:f} \ttest accuracy:{:f}'.format(epoch, loss_epoch.item(), accuracy, loss_test, accuracy_test))
-        if show_epoch_plots:
-            plt.plot(y_test_all[:slice_len])
-            plt.plot(y_pred_test[:slice_len])
-            plt.title(epoch)
-            plt.show()
+        plt.plot(y_test_all.cpu())
+        plt.plot(y_pred_test.cpu())
+        plt.title('epoch={:d} test accuracy={:6f}'.format(epoch, accuracy_test))
+        plt.show()
+
+    if accuracy > 0.9 and accuracy_test > 0.9:
+        torch.save(model, 'model.pt')
+        torch.save(model.state_dict(), 'params.pt')
 
 plt.subplot(221)
 plt.plot(loss_list)
 plt.title('train loss')
+plt.ylim(0, 30)
 plt.xlabel('epoch')
 
 plt.subplot(222)
@@ -144,10 +189,12 @@ plt.xlabel('epoch')
 plt.subplot(223)
 plt.plot(loss_test_list)
 plt.title('test loss')
+plt.ylim(0, 5)
 plt.xlabel('epoch')
 
 plt.subplot(224)
 plt.plot(accuracy_test_list)
 plt.title('test accuracy')
 plt.xlabel('epoch')
+# plt.savefig('{:f}_epoch{:d}.png'.format(LR, EPOCH))
 plt.show()

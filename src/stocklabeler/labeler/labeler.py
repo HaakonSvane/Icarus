@@ -47,9 +47,9 @@ class Labeler:
         :param val: The number of hours for the time window.
         :return: None
         '''
-        if not (val > 0 and isinstance(val, int)):
+        if not (val > 0 and isinstance(val, (int, float))):
             raise ValueError("Time window must be a positive integer")
-        self._time_window = int(1/self.dt)*val
+        self._time_window = int(1/self.dt*val)
 
     @property
     def time_col_name(self):

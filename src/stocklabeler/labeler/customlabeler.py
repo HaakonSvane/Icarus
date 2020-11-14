@@ -69,15 +69,15 @@ class CustomLabeler(Labeler):
         self._calculate_conv_window()
 
     def calculate(self, thresh_buy=0.005, thresh_sell=0.005, conv_mode='reflect', median_mode='reflect',
-                  median_size=55, smooth_result='False'):
+                  median_size=55, smooth_result=False):
         if self.convolution_window is None:
             raise ValueError('Convolution window not set. Use CustomLabeler.set_conv_win_func() first')
 
         self.data_results[self.R_COLS.conv] = convolve1d(self.data[self.price_col_name],
                                                          np.flip(self.convolution_window), mode=conv_mode)
         dat = None
-        if smooth_result:  # Computes a running average over one hour to smooth the price data
-            l = int(1 / self.dt)
+        if smooth_result:  # Computes a running average over 2 hours to smooth the price data
+            l = int(1 / self.dt)*2
             dat = convolve1d(self.data[self.price_col_name], [1 / l] * l)
         else:
             dat = self.data[self.price_col_name]

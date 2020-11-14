@@ -97,7 +97,9 @@ def plot_comp_data(label_data):
 
 
 if __name__ == '__main__':
-    comp = label_data(which=['AAPL', 'GOOGL', 'FB'], save=False, return_computations=True)
+    comp = label_data(which='AAPL', save=False, return_computations=True)
+
+
     for c in comp:
         plot_comp_data(c)
         pass

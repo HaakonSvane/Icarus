@@ -4,9 +4,10 @@ import torch.nn.functional as F
 from torch.nn.utils import weight_norm
 
 
-class RNN(nn.Module):
+# LSTM
+class LSTM(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, num_classes):
-        super(RNN, self).__init__()
+        super(LSTM, self).__init__()
         self.hidden_size = hidden_size
         self.num_layers = num_layers
         self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
@@ -16,10 +17,27 @@ class RNN(nn.Module):
         h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size)  # x.size(0)是batch_size
         c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size)
         out, (_, _) = self.lstm(x, (h0, c0))  # out: tensor of shape (batch_size, seq_length, hidden_size)
-        out = F.softmax(self.fc(out), dim=2)
+        out = F.softmax(self.fc(out[:, -1, :]), dim=1)
         return out
 
 
+# GRU
+class GRU(nn.Module):
+    def __init__(self, input_size, hidden_size, num_layers, num_classes):
+        super(GRU, self).__init__()
+        self.hidden_size = hidden_size
+        self.num_layers = num_layers
+        self.lstm = nn.GRU(input_size, hidden_size, num_layers, batch_first=True)
+        self.fc = nn.Linear(hidden_size, num_classes)
+
+    def forward(self, x):
+        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size)  # x.size(0)是batch_size
+        out, _ = self.lstm(x, h0)  # out: tensor of shape (batch_size, seq_length, hidden_size)
+        out = F.softmax(self.fc(out[:, -1, :]), dim=1)
+        return out
+
+
+# TCN
 class Chomp1d(nn.Module):
     def __init__(self, chomp_size):
         super(Chomp1d, self).__init__()
@@ -92,6 +110,5 @@ class TCN(nn.Module):
     def forward(self, x):
         x = x.permute(0, 2, 1)
         y1 = self.conv(x)
-        y1 = y1.permute(0, 2, 1)
-        y2 = self.linear(y1)
+        y2 = self.linear(y1[:, :, -1])
         return y2

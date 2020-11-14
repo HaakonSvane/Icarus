@@ -2,6 +2,7 @@ import pandas as pd
 import os
 from src.scripts.preprocessing.utilities import *
 from src.stocklabeler import labeler as lab
+from src.scripts.preprocessing import utilities as util
 import config
 
 '''
@@ -29,8 +30,8 @@ def label_data(win_size: int = 16 * 5, which: str = 'all', save: bool = True,
     '''
 
     path_raw = config.DATA_DIR / 'preprocessing' / 'raw'
-    path_labeled = config.DATA_DIR / 'preprocessing' / 'labeled'
-    subdirectories = [os.path.basename(x) for x in path_raw.iterdir() if x.is_dir()]
+    path_labeled = config.DATA_DIR / 'training' / 'labeled'
+    subdirectories = [x.name for x in path_raw.iterdir() if x.is_dir()]
     new_subdir = []
 
     if which is not 'all':
@@ -38,32 +39,26 @@ def label_data(win_size: int = 16 * 5, which: str = 'all', save: bool = True,
             for w in which:
                 if w not in subdirectories:
                     raise ValueError(f'The symbol {w} was not found in {path_raw}.')
-                new_subdir.append(w)
+                new_subdir.append(path_raw / w)
         else:
             if which not in subdirectories:
                 raise ValueError(f'The symbol {which} was not found in {path_raw}.')
-            new_subdir.append(which)
+            new_subdir.append(path_raw / which)
     else:
-        new_subdir = subdirectories
+        new_subdir = [path_raw / sd for sd in subdirectories]
 
     return_list = []
     for d in new_subdir:
-        sym = d
-        frame = []
+        sym = d.name
         print(f'Computing labels for {sym}...')
-        for y in range(1, 3):
-            for m in range(1, 13):
-                frame.append(load_data(path_raw / f'{sym}/{sym}_15min_y{y}m{m}.csv'))
-        frame = pd.concat(frame, ignore_index=True)
-        # Data from AV is reversed in the sense that it the first entry is the most recent in time. This code flips it.
-        frame = frame.reindex(index=frame.index[::-1])
-        frame = frame.reset_index(drop=True)
+        frame = util.load_batch_data(path=d, reverse=True, format_time=True)
 
         # win_size is in hours
         win_size = int(win_size)
         l = lab.CustomLabeler(frame, win_size, dt=0.25)
         l.set_conv_win_func('cubic', a=1, b=0, c=0, d=0)
-        lab_data = l.calculate(thresh_buy=0.01, thresh_sell=0.01, median_size=300 - 1)
+        lab_data = l.calculate(thresh_buy=0.015, thresh_sell=0.015, median_size=300 - 1, smooth_result=True)
+
         if save:
             save_path = path_labeled / f'{win_size}H_WIN'
             if not save_path.is_dir():
@@ -73,6 +68,7 @@ def label_data(win_size: int = 16 * 5, which: str = 'all', save: bool = True,
             final_data.to_csv(save_path / f'{sym}_15min.csv', index=False)
         if return_computations:
             return_list.append(lab_data)
+
     if return_computations:
         print('\nAverage label distribution:')
         counts = [r['label'].value_counts(normalize=True) for r in return_list]
@@ -81,4 +77,4 @@ def label_data(win_size: int = 16 * 5, which: str = 'all', save: bool = True,
 
 
 if __name__ == '__main__':
-    label_data(win_size=16*1, which='all', save=True, return_computations=False)
+    label_data(win_size=16*1, which='all', save=False, return_computations=False)
