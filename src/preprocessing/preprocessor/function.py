@@ -1,15 +1,43 @@
 import pandas as pd
 import numpy as np
 
+from src.preprocessing.preprocessor.prep_config import *
+
+
 class _Function:
 
-    @staticmethod
-    def RSI(frame: pd.DataFrame, hours_behind: int, dt: float = 0.25) -> np.array:
+    def __init__(self, hours_behind: float, dt: float):
+        self.hours_behind = hours_behind
+        self.dt = dt
+
+    @property
+    def hours_behind(self):
+        return self._hours_behind
+
+    @hours_behind.setter
+    def hours_behind(self, val):
+        if not isinstance(val, (int, float)):
+            raise ValueError(f'Value {val} is not valid. Must be an integer or float.')
+        self._hours_behind = val
+
+    @property
+    def dt(self):
+        return self._dt
+
+    @dt.setter
+    def dt(self, val):
+        if not isinstance(val, (int, float)):
+            raise ValueError(f'Value {val} is not valid. Must be an integer or float.')
+        self._dt = val
+
+    def RSI(self, frame: pd.DataFrame, open_name: str = 'open', close_name: str = 'close') -> np.array:
         '''
+        Calculates the RSI for a dataframe. The frame must contain a column with open and close prices.
+
         :param frame: dataframe containing data to calculate RSI for.
-        :param hours_behind: Number of hours to look back in the calculation.
-        :param dt: The resolution of the data in hours.
-        :return: dataframe of the calculated RSI
+        :param open_name: Name of the "open" price column in the dataframe. Defaults to 'open'.
+        :param close_name: Name of the "close" price column in the dataframe. Defaults to 'close'.
+        :return: dataframe of the calculated RSI.
         '''
 
         U_calc = lambda diff: diff if diff > 0 else 0
@@ -21,9 +49,9 @@ class _Function:
         rsi = np.zeros(n_points)
         rsi.fill(np.nan)
 
-        look_back = int(hours_behind / dt)
+        look_back = int(self.hours_behind / DT)
 
-        diffs = (frame['close'] - frame['open']).values
+        diffs = (frame[close_name] - frame[open_name]).values
         U = f_U(diffs)
         D = f_D(diffs)
 

@@ -16,10 +16,10 @@ def get_slice(name, slice_len, sample):
     X = []
     for i in range(sample - slice_len + 1):
         one_slice = []
-        for j in range(i, i+slice_len):
+        for j in range(i, i + slice_len):
             one_slice.append(X_all[j])
         X.append(one_slice)
 
-    Y = Y_all[int(slice_len/2):int(slice_len/2)+len(X)]
+    Y = Y_all[int(slice_len / 2):int(slice_len / 2) + len(X)]
     print('Slices!')
     return X, Y

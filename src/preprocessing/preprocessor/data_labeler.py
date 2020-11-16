@@ -1,23 +1,20 @@
 import pandas as pd
-import numpy as np
-from typing import Optional
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-from src.preprocessing.preprocessor.config import *
+from src.preprocessing.preprocessor.prep_config import *
 from src.stocklabeler import labeler as lab
 
 
 class _DataLabeler:
-    def __init__(self, hours_ahead: float):
+    def __init__(self, hours_ahead: float, dt : float):
         '''
         :param hours_ahead: Number of hours to look ahead into the data when determining the label.
-        :param smooth_result: Whether or not to smooth the results such that labels are more coherent.
-        :param med_win_size: Median window size used in the labeling process. Must be an odd integer.
+        :param dt: Number of hours between each datapoint in the data to be loaded.
         '''
 
-        self.computation = None
         self.hours_ahead = hours_ahead
+        self.dt = dt
         # The convolution window will be double the "look forward" value because of its symmetry.
         self.time_window = 2 * hours_ahead
 
@@ -31,7 +28,17 @@ class _DataLabeler:
             raise ValueError(f'Value {val} is not valid. Must be an integer or float.')
         self._hours_ahead = val
 
-    #TODO: add return type
+    @property
+    def dt(self):
+        return self._dt
+
+    @dt.setter
+    def dt(self, val):
+        if not isinstance(val, (int, float)):
+            raise ValueError(f'Value {val} is not valid. Must be an integer or float.')
+        self._dt = val
+
+    #TODO: proper docstring
     def get_labels(self, frame: pd.DataFrame, mode='custom', smooth_result: bool = True,
                    med_win_size: int = 300 - 1, return_full_computation: bool = False):
         MODES = {
@@ -48,8 +55,8 @@ class _DataLabeler:
         except KeyError:
             raise ValueError(f'Mode {mode} is not supported. Supported modes are: {MODES.keys()}.')
 
-        labeler = mode(frame, self.time_window, dt=0.25)
-        labeler.set_conv_win_func('cubic', a=1, b=0, c=0, d=0)
+        labeler = mode(frame, self.time_window, dt=DT)
+        labeler.set_conv_win_func(LAB_CONV_FUNC, a=1, b=0, c=0, d=0)
         computation = labeler.calculate(thresh_buy=THRESH_BUY, thresh_sell=THRESH_SELL, median_size=med_win_size,
                                         smooth_result=smooth_result)
         return computation[labeler.R_COLS.lab].values if not return_full_computation else computation
@@ -116,7 +123,7 @@ class _DataLabeler:
 
         axes.set_title('Close price and result')
         plt.xlabel('Time Index')
-        fig.suptitle('Labeling using a cubic convolution window')
+        fig.suptitle(f'Labeling using a {LAB_CONV_FUNC} convolution window')
 
         handles, labels = axes.get_legend_handles_labels()
         axes.legend(handles=handles[:], labels=labels[:])

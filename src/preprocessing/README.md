@@ -10,7 +10,9 @@ The data goes through multiple stages of processing using this package. The gene
 2. The data is trimmed down to normal working hours (09:30-16:00) since some of the equities list before/after-hour trading.
 3. The stocklabeler labels the data.
 4. The dimensions of the datapoints are normalized.
-5. Data is saved.
+5. The data is saved as a csv file in data/training.
+6. The data is clustered to each of the three labels.
+7. Label clusters smaller than 
 
 For generating the 2D images that are used in the convolutional neural network, the normalized phase space of the data
 is used in recurrence plots.
@@ -28,16 +30,33 @@ results of technical indicators (such as RSI). If we set the window size to a 6 
 if we set it to 3 days since a bigger window would smooth out any small disturbances that are not relevant to this period.
 
 ### Parameters
-All the parameters used in the preprocessing stage can be found in the config file for this package.
+All the parameters used in the preprocessing stage can be found in the *prep_config.py* file for this package.
 Below is a table of explanations and values used for the preprocessing:
 
-|Parameter      |Value  |Description                                        |
+|Parameter      |Value  |Description                                            |
 |:---|:---:|:---:|
-|HOURS_AHEAD    |150    |Hours ahead used to determine the label points.    |
-|HOURS_BEHIND   |150    |Hours behind used in normalization.                |
-|THRESH_BUY     |0.015  |Threshold for determining a buy point.             |
-|THRESH_SELL    |0.015  |Threshold for determining a sell point.            | 
-|MED_WIN        |299    |Walking median window size for the custom labeler. |
+|DT             |0.25   |Number of hours between each datapoint in the raw data.|
+|LAB_CONV_FUNC  |'cubic'|The convolution window to use for the labeler.         |
+|HOURS_AHEAD    |150    |Hours ahead used to determine the label points.        |
+|HOURS_BEHIND   |150    |Hours behind used in normalization.                    |
+|THRESH_BUY     |0.015  |Threshold for determining a buy point.                 |
+|THRESH_SELL    |0.015  |Threshold for determining a sell point.                | 
+|MED_WIN        |299    |Walking median window size for the custom labeler.     |
+|START_TRADE    |'09:30'|Trading hours open time.                               |
+|END_TRADE      |'16:00'|Trading hours close time.                              |
+|CLUSTER_SIZE   |130    |Minimum size of the clusters to consider.              |
 
+### Normalization
+Normalizing the data before feeding it into the neural network can increase the performance of the network. 
+Financial data can be hard to normalize, and there are many approaches to take when doing so. First comes the determination
+of *what* to normalize, then comes the determination of how to normalize it. We could for example choose to normalize the
+closing price of a stock C(t) for some time t, but we would then need to determine
+
+Normalization can have severe effects on the performance of networks. In 
+[Efficient approach to Normalization of Multimodal Biometric Scores](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.259.2703&rep=rep1&type=pdf),
+the authors present multiple methods and the effects on them in neural networks. A popular normalization method is the
+*modified tanh* estimator. This has the advantage of using the standard deviation and mean of the dataset instead of using
+the [Hampel estimators](https://en.wikipedia.org/wiki/Redescending_M-estimator). It is thus faster and simpler than
+the normal tanh estimator, but has the same qualities such as robustness.
 
     

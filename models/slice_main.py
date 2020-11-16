@@ -1,30 +1,20 @@
-<<<<<<< Updated upstream:models/slice_main.py
 # B=0, H=1, S=2
 # If sample = 2000, it will generate 2000-320+1=1681 samples, 1344 for training and 337 for testing.
 sample = 1000
 
-=======
->>>>>>> Stashed changes:models/main.py
 import torch
 import torch.nn as nn
 import torch.utils.data as data
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
-<<<<<<< Updated upstream:models/slice_main.py
 
-=======
->>>>>>> Stashed changes:models/main.py
 
 import config
-from slice import get_slice
-from slice_models import LSTM
-from slice_models import GRU
-from slice_models import TCN
+from models.slice import get_slice
+from models.slice_models import LSTM
+from models.slice_models import GRU
+from models.slice_models import TCN
 
-<<<<<<< Updated upstream:models/slice_main.py
-=======
-show_epoch_plots = False
->>>>>>> Stashed changes:models/main.py
 
 class TorchDataset(data.Dataset):
     def __init__(self, dataset_x, dataset_y):
@@ -58,11 +48,6 @@ channel_seq = [NHID] * LEVEL
 
 INPUT_SIZE = 5
 CLASSES = 3
-<<<<<<< Updated upstream:models/slice_main.py
-=======
-model = RNN(INPUT_SIZE, HIDDEN_SIZE, LAYER, CLASSES)
-#model = TCN(INPUT_SIZE, CLASSES, channel_seq, KERNEL_SIZE, 0)
->>>>>>> Stashed changes:models/main.py
 
 # model = LSTM(INPUT_SIZE, HIDDEN_SIZE, LAYER, CLASSES)
 # model = GRU(INPUT_SIZE, HIDDEN_SIZE, LAYER, CLASSES)
@@ -70,12 +55,8 @@ model = TCN(INPUT_SIZE, CLASSES, channel_seq, KERNEL_SIZE, 0)
 
 path = config.DATA_DIR / 'training' / 'labeled' / '80H_WIN'
 name_all = [f for f in path.iterdir() if f.is_file()]
-<<<<<<< Updated upstream:models/slice_main.py
 name_all = name_all[:1]
 print(name_all)
-=======
-name_all = name_all[1:2]
->>>>>>> Stashed changes:models/main.py
 
 
 x_train_all = []
@@ -83,12 +64,7 @@ x_test_all = []
 y_train_all = []
 y_test_all = []
 for name in name_all:
-<<<<<<< Updated upstream:models/slice_main.py
     X, Y = get_slice(name, slice_len, sample)
-=======
-    X, Y = get_dataset(name, slice_len)
-    print(name)
->>>>>>> Stashed changes:models/main.py
     X_tensor = torch.Tensor(X)
     Y_tensor = torch.Tensor(Y).to(dtype=torch.int64)
     x_train, x_test, y_train, y_test = train_test_split(X_tensor, Y_tensor, test_size=0.2, random_state=1)

@@ -1,5 +1,12 @@
 import pandas as pd
+import numpy as np
 from pathlib import Path
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+import seaborn as sns
+
+from scipy.spatial.distance import cdist
+from src.preprocessing.preprocessor.prep_config import *
 
 
 class _Utility:
@@ -74,8 +81,55 @@ class _Utility:
         return frame[frame.time.dt.strftime('%W') == str(week_no)]
 
     @staticmethod
-    def get_trading_hours(frame: pd.DataFrame, from_time: str = '09:30', to_time: str = '16:00'):
+    def get_trading_hours(frame: pd.DataFrame, from_time: str = START_TRADE, to_time: str = END_TRADE):
         frame = frame.set_index('time')
         frame = frame.between_time(start_time=from_time, end_time=to_time, include_start=False, include_end=True)
         frame = frame.reset_index()
         return frame
+
+    @staticmethod
+    def show_phase_plot(frame: pd.DataFrame, ax1: str, ax2: str, ax3: str):
+        '''
+        Plots a 3 dimensional phase plot of the the data in the dataframe on the three axes ax1, ax2 and ax3.
+
+        :param frame: dataframe of the data to be plotted.
+        :param ax1: Name of column in axis 1.
+        :param ax2: Name of column in axis 2.
+        :param ax3: Name of column in axis 3.
+        :return:
+        '''
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+        ax.plot(frame[ax1].values, frame[ax2].values, frame[ax3].values)
+        ax.set_xlabel(ax1)
+        ax.set_ylabel(ax2)
+        ax.set_zlabel(ax3)
+        plt.show()
+
+    @staticmethod
+    def calc_recurrence_plot(frame: pd.DataFrame, percentile: int = 2, distance_metric: str = 'euclidean', debug_plot: bool = False) -> np.array:
+        '''
+        Calculates a recurrence plot (2D-array of values 0 or 1) using a metric on the phase space.
+        A recurrence plot is a 2D representation of when a trajectory in phase space at time i is roughly in the same
+        region at time j.
+
+
+        :param frame: dataframe containing all the columns to use in the phase space.
+        :param percentile:  The points that are below the nth percentile in the distance defined by the distance metric
+                            will be included.
+        :param distance_metric: The distance metric to use on the phase space. Defaults to 'euclidean'.
+        :param debug_plot: Whether or not to plot the resulting recurrence plot or not. For debugging and exploration.
+        :return: 2D-array of the results from the recurrence plot.
+        '''
+
+        y = frame.to_numpy(dtype=np.float)
+        # cdist calculates the distance from each point i to all other points j. The result is a matrix of distances
+        # with zeros on the main diagonal since the distance form each point to itself is always zero.
+        dist = cdist(y, y, metric=distance_metric)
+        perc = np.percentile(dist, percentile)
+        img = np.where(dist <= perc, 1, 0)
+
+        if debug_plot:
+            sns.set()
+            plt.imshow(img, cmap='binary', origin='lower')
+            plt.show()
