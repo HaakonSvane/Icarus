@@ -18,10 +18,10 @@ For generating the 2D images that are used in the convolutional neural network, 
 is used in recurrence plots.
  
 ### Window size:
-The labeler uses "future" datapoints P(t+n*dt) to determine the label for a datapoint P(t).
+The labeler uses "future" datapoints *P(t+ndt)* to determine the label for a datapoint *P(t)*.
 In practice, this is done using one or several convolutions depending on which labeling mode is used. Since the label is the only feature we
 wish to use future data to determine, the rest of the processing pipeline (normalization, RSI, ...) MUST be restricted to previous datapoints P(t-n*dt).
-Because of the nature of discrete non-shifted convolutions, for any datapoint P(t), values that are *window_size*/2 points
+Because of the nature of discrete non-shifted convolutions, for any datapoint *P(t)*, values that are *window_size*/2 points
 away from the point in both directions are used. This means that for a window of 2 days, the labeler will look forward 1 day
 (and also 1 day backwards) when determining the label.
 
@@ -33,24 +33,25 @@ if we set it to 3 days since a bigger window would smooth out any small disturba
 All the parameters used in the preprocessing stage can be found in the *prep_config.py* file for this package.
 Below is a table of explanations and values used for the preprocessing:
 
-|Parameter      |Value  |Description                                            |
+|Parameter      |Value  |Description                                                                                            |
 |:---|:---:|:---:|
-|DT             |0.25   |Number of hours between each datapoint in the raw data.|
-|LAB_CONV_FUNC  |'cubic'|The convolution window to use for the labeler.         |
-|HOURS_AHEAD    |150    |Hours ahead used to determine the label points.        |
-|HOURS_BEHIND   |150    |Hours behind used in normalization.                    |
-|THRESH_BUY     |0.015  |Threshold for determining a buy point.                 |
-|THRESH_SELL    |0.015  |Threshold for determining a sell point.                | 
-|MED_WIN        |299    |Walking median window size for the custom labeler.     |
-|START_TRADE    |'09:30'|Trading hours open time.                               |
-|END_TRADE      |'16:00'|Trading hours close time.                              |
-|CLUSTER_SIZE   |130    |Minimum size of the clusters to consider.              |
+|DT             |0.25   |Number of hours between each datapoint in the raw data.                                                |
+|LAB_CONV_FUNC  |'cubic'|The convolution window to use for the labeler.                                                         |
+|HOURS_AHEAD    |150    |Hours ahead used to determine the label points.                                                        |
+|HOURS_BEHIND   |150    |Hours behind used in normalization.                                                                    |
+|THRESH_BUY     |0.015  |Threshold for determining a buy point.                                                                 |
+|THRESH_SELL    |0.015  |Threshold for determining a sell point.                                                                | 
+|MED_WIN        |299    |Walking median window size for the custom labeler.                                                     |
+|START_TRADE    |'09:30'|Trading hours open time.                                                                               |
+|END_TRADE      |'16:00'|Trading hours close time.                                                                              |
+|REC_PERC       |20     |nth percentile for which distances in the phase plot fall under are considered in the recurrence plot. |
+|CLUSTER_SIZE   |130    |Minimum size of the clusters to consider. The size n will result in images of size n x n.              |
 
 ### Normalization
 Normalizing the data before feeding it into the neural network can increase the performance of the network. 
 Financial data can be hard to normalize, and there are many approaches to take when doing so. First comes the determination
 of *what* to normalize, then comes the determination of how to normalize it. We could for example choose to normalize the
-closing price of a stock C(t) for some time t, but we would then need to determine
+closing price of a stock *C(t)* for some time *t*, but we would then need to determine
 
 Normalization can have severe effects on the performance of networks. In 
 [Efficient approach to Normalization of Multimodal Biometric Scores](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.259.2703&rep=rep1&type=pdf),
@@ -59,4 +60,22 @@ the authors present multiple methods and the effects on them in neural networks.
 the [Hampel estimators](https://en.wikipedia.org/wiki/Redescending_M-estimator). It is thus faster and simpler than
 the normal tanh estimator, but has the same qualities such as robustness.
 
+The modified tanh normalizer was again modified to yield an output range of \[-1, 1\].
+This results in a mean of 0 and points within one standard deviation at values around \[0.05, 0.05\]. This new
+*modified modified* tanh normalizer (name pending) was used on all the data except for the RSI value which was divided
+100 to clamp it to the same interval as the other variables.
+
+### Clustering
+In order to convert the time-series data to images of the same resolution, successive data points with the same label
+are clustered together. Trimming all the clusters of size greater than *CLUSTER_SIZE* down to this value around their 
+midpoint and discarding the rest, leaves clusters of equal size with the same label for all data points within.
+
+### Recurrence plots
+For the 2D convolutional neural network, [recurrence plots](https://en.wikipedia.org/wiki/Recurrence_plot) where created
+from the equally partitioned clusters of data. The idea is to have the network find patterns in the different regions
+which can be generalized during training. Visually inspecting the recurrence plots generated in this process seem to
+indicate that the data resembles the characteristics of brownian motion. This is expected, but not appreciated. 
+
+The euclidean distance metric was used in creating the recurrence, and the tolerance of the distance was set such that
+only distances under the *REC_PERC* percentile are shown in the plot.
     

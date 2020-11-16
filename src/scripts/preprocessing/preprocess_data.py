@@ -51,4 +51,4 @@ norm_frame.drop(norm_frame.head(int(HOURS_AHEAD / DT) - 1).index, inplace=True)
 norm_frame.drop(norm_frame.tail(int(HOURS_BEHIND / DT + 1)).index, inplace=True)
 norm_frame.reset_index(drop=True, inplace=True)
 
-prep.Utility.calc_recurrence_plot(norm_frame.head(2880).drop('label', axis=1), debug_plot=True)
+prep.Utility.calc_recurrence_plot(norm_frame.head(2880).drop('label', axis=1), percentile=REC_PERC, debug_plot=True)

@@ -9,3 +9,4 @@ MED_WIN_SIZE = 300-1        # Walking median window size for the custom labeler.
 START_TRADE = '09:30'       # Trading hours open time.
 END_TRADE = '16:00'         # Trading hours close time
 CLUSTER_SIZE = 130          # Minimum size of the clusters to consider. The size n will result in images of size n x n.
+REC_PERC = 20               # nth percentile for which distances in the phase plot fall under are considered in the recurrence plot.
