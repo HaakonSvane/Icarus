@@ -9,10 +9,11 @@ The data goes through multiple stages of processing using this package. The gene
 1. Raw data gets loaded into memory.
 2. The data is trimmed down to normal working hours (09:30-16:00) since some of the equities list before/after-hour trading.
 3. The stocklabeler labels the data.
-4. The dimensions of the datapoints are normalized.
-5. The data is saved as a csv file in data/training.
-6. The data is clustered to each of the three labels.
-7. Label clusters smaller than 
+4. RSI is calculated for the equity.
+5. The variables in each datapoints are normalized.
+6. The data is saved as a csv file in data/training.
+7. The data is clustered to each of the three labels.
+8. Label clusters smaller than 
 
 For generating the 2D images that are used in the convolutional neural network, the normalized phase space of the data
 is used in recurrence plots.
@@ -33,19 +34,20 @@ if we set it to 3 days since a bigger window would smooth out any small disturba
 All the parameters used in the preprocessing stage can be found in the *prep_config.py* file for this package.
 Below is a table of explanations and values used for the preprocessing:
 
-|Parameter      |Value  |Description                                                                                            |
+|Parameter      |Value  |Description                                                                                                |
 |:---|:---:|:---:|
-|DT             |0.25   |Number of hours between each datapoint in the raw data.                                                |
-|LAB_CONV_FUNC  |'cubic'|The convolution window to use for the labeler.                                                         |
-|HOURS_AHEAD    |150    |Hours ahead used to determine the label points.                                                        |
-|HOURS_BEHIND   |150    |Hours behind used in normalization.                                                                    |
-|THRESH_BUY     |0.015  |Threshold for determining a buy point.                                                                 |
-|THRESH_SELL    |0.015  |Threshold for determining a sell point.                                                                | 
-|MED_WIN        |299    |Walking median window size for the custom labeler.                                                     |
-|START_TRADE    |'09:30'|Trading hours open time.                                                                               |
-|END_TRADE      |'16:00'|Trading hours close time.                                                                              |
-|REC_PERC       |20     |nth percentile for which distances in the phase plot fall under are considered in the recurrence plot. |
-|CLUSTER_SIZE   |130    |Minimum size of the clusters to consider. The size n will result in images of size n x n.              |
+|DT             |0.25       |Number of hours between each datapoint in the raw data.                                                |
+|LAB_CONV_FUNC  |'cubic'    |The convolution window to use for the labeler.                                                         |
+|HOURS_AHEAD    |150        |Hours ahead used to determine the label points.                                                        |
+|HOURS_BEHIND   |150        |Hours behind used in normalization.                                                                    |
+|THRESH_BUY     |0.015      |Threshold for determining a buy point.                                                                 |
+|THRESH_SELL    |0.015      |Threshold for determining a sell point.                                                                | 
+|MED_WIN        |299        |Walking median window size for the custom labeler.                                                     |
+|START_TRADE    |'09:30'    |Trading hours open time.                                                                               |
+|END_TRADE      |'16:00'    |Trading hours close time.                                                                              |
+|CLUSTER_SIZE   |130        |Minimum size of the clusters to consider. The size n will result in images of size n x n.              |
+|REC_PERC       |20         |nth percentile for which distances in the phase plot fall under are considered in the recurrence plot. |
+|REC_DIST_MET   |'euclidean'|Distance metric to use in the recurrence plots.                                                        |
 
 ### Normalization
 Normalizing the data before feeding it into the neural network can increase the performance of the network. 

@@ -4,6 +4,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import seaborn as sns
+from typing import List
 
 from scipy.spatial.distance import cdist
 from src.preprocessing.preprocessor.prep_config import *
@@ -106,6 +107,14 @@ class _Utility:
         ax.set_zlabel(ax3)
         plt.show()
 
+    #TODO: Work on this
+    @staticmethod
+    def cluster_data(frame: pd.DataFrame, min_cluster_size: int = CLUSTER_SIZE, label_col_name: str = 'label'):
+        clusters = frame.groupby((frame[label_col_name].shift() != frame[label_col_name]).cumsum())
+        print(clusters.size().values >= min_cluster_size)
+        clusters = clusters[clusters.size().values >= min_cluster_size]
+        print(clusters.size())
+
     @staticmethod
     def calc_recurrence_plot(frame: pd.DataFrame, percentile: int = 2, distance_metric: str = 'euclidean', debug_plot: bool = False) -> np.array:
         '''
@@ -133,3 +142,6 @@ class _Utility:
             sns.set()
             plt.imshow(img, cmap='binary', origin='lower')
             plt.show()
+
+        return img
+
