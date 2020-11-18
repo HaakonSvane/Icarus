@@ -16,7 +16,8 @@ from tqdm import tqdm
 '''
 prep = Preprocessor()
 
-def import_and_trim():
+def import_and_trim(path: str):
+
     pass
 
 def label():

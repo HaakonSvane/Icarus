@@ -1,11 +1,19 @@
 from src.alphavantage.alpha_vantage_api.alphavantage import AlphaVantage
 from functools import wraps
 import pathlib
+from typing import Callable, Any
 
 
-def _validate_args(func):
+def _validate_args(func: Callable[[str], str]) -> Callable[[Any], Any]:
+    '''Decorator function to validate the arguments passed to a TechnicalIndicator method.
+
+    :param func: TechnicalIndicator method to be validated.
+    :raises ValueError: One or more arguments failed validation.
+    '''
     @wraps(func)
     def wrapper(self, *args, **kwargs):
+        # Actual wrapper. Validates the arguments from the parameter function dictionary
+        # TechnicalIndicators._ARG_RESTRICTIONS.
         func(self, *args, **kwargs)
         arg_dict = AlphaVantage._get_arg_dict(func, *args, **kwargs)
         for key, val in arg_dict.items():
@@ -14,15 +22,38 @@ def _validate_args(func):
         return func(self, *args, **kwargs)
     return wrapper
 
-def is_positive_integer(x : int):
+def is_positive_integer(x : int) -> bool:
+    '''Checks whether or not the argument is a positive integer.
+
+    :param x: Value to be validated.
+    :return: Boolean value of the truth value.
+    '''
     return isinstance(x, int) and x > 0
 
-def is_positive_float(x : float):
+def is_positive_float(x : float) -> bool:
+    '''Checks whether or not the argument is a positive floating point number.
+
+    :param x: Value to be validated.
+    :return: Boolean value of the truth value.
+    '''
     return isinstance(x, float) and x > 0
 
 class TechnicalIndicators(AlphaVantage):
 
-    #TODO: Add descriptions to each function. Pack the values in tuples of (func, desc)
+    '''
+    Class for calling the Alpha Vantage Technical indicators class.
+
+    :param api_key: API key provided by Alpha Vantage. Note that you can set the environment variable
+        ALPHAVANTAGE_API_KEY if you don't want to explicitly pass this parameter. Defaults to None.
+    :param output_format: Default request format of the files ('json' or 'csv').
+        Note that some requests can not return the desired format. Defaults to 'json'.
+    :param error_log_dir: Path to directory to save the error log file. Defaults to the package directory.
+    :param log_errors: Whether or not to create an error log file. Defaults to True
+
+    '''
+
+    # Restrictions to all arguments in the call methods. Each value is a boolean lambda function that returns False for
+    # invalid values.
     _ARG_RESTRICTIONS = {
         'symbol': lambda var: isinstance(var, str),
         'interval': lambda var: var in ["1min", "5min", "15min", "30min", "60min", 'daily', 'weekly', 'monthly'],

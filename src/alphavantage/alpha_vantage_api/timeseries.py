@@ -4,6 +4,18 @@ import re
 
 
 class TimeSeries(AlphaVantage):
+    '''
+    Class for calling the Alpha Vantage Time series class.
+
+    :param api_key: API key provided by Alpha Vantage. Note that you can set the environment variable
+        ALPHAVANTAGE_API_KEY if you don't want to explicitly pass this parameter. Defaults to None.
+    :param output_format: Default request format of the files ('json' or 'csv').
+        Note that some requests can not return the desired format. Defaults to 'json'.
+    :param error_log_dir: Path to directory to save the error log file. Defaults to the package directory.
+    :param log_errors: Whether or not to create an error log file. Defaults to True
+
+    '''
+
     def __init__(self, api_key=None, output_format='json',
                  error_log_dir=pathlib.Path(__file__).parent.parent.absolute(), log_errors=True):
         super().__init__(api_key, output_format, error_log_dir, log_errors)

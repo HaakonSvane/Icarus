@@ -8,7 +8,7 @@
 [![TechnicalIndicators-100%](https://img.shields.io/badge/TechnicalIndicators-100%25-brightgreen)]()
 ### What is it?
 The package is a lightweight python wrapper for the Alpha Vantage API.
-Alpha Vantage provides a range of financial data over 20 years. There are multiple categories of data available. 
+Alpha Vantage provides a range of financial data over 20 years. There are multiple classes of data available. 
 The descriptions of these are fetched from their website:
 
 * __TimeSeries__: "This suite of APIs provide global equity data in 4 different temporal resolutions: 
