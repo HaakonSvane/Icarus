@@ -70,7 +70,7 @@ class Preprocessor:
         if not new_path.is_dir():
             os.mkdir(new_path)
 
-        frame.to_csv(new_path / filename)
+        frame.to_csv(new_path / filename, index=False)
 
     def save_image_to_file(self, arr: np.array, filename: str, sub_dir: str = None, extension: str = 'png'):
         '''
