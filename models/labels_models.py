@@ -3,6 +3,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn.utils import weight_norm
 
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 
 # LSTM
 class LSTM(nn.Module):
@@ -14,8 +16,8 @@ class LSTM(nn.Module):
         self.fc = nn.Linear(hidden_size, num_classes)
 
     def forward(self, x):
-        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size)  # x.size(0)是batch_size
-        c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size)
+        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(DEVICE)  # x.size(0)是batch_size
+        c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(DEVICE)
         out, (_, _) = self.lstm(x, (h0, c0))  # out: tensor of shape (batch_size, seq_length, hidden_size)
         out = F.softmax(self.fc(out[:, -1, :]), dim=1)
         return out
@@ -31,7 +33,7 @@ class GRU(nn.Module):
         self.fc = nn.Linear(hidden_size, num_classes)
 
     def forward(self, x):
-        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size)  # x.size(0)是batch_size
+        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(DEVICE)  # x.size(0)是batch_size
         out, _ = self.lstm(x, h0)  # out: tensor of shape (batch_size, seq_length, hidden_size)
         out = F.softmax(self.fc(out[:, -1, :]), dim=1)
         return out
