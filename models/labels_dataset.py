@@ -3,7 +3,8 @@ import random
 import pandas as pd
 
 
-def get_slice(name, slice_len, label_extra, sample):
+def get_slice(name, slice_len, label_extra, sample, input_size):
+    print('Begin to slice.')
     random.seed(1)
     data_15min = pd.read_csv(name)
     data_15min.loc[data_15min.label == 'B', 'label'] = int(0)
@@ -13,8 +14,15 @@ def get_slice(name, slice_len, label_extra, sample):
     features_all = []
     label_all = []
     for i, data in data_15min.iterrows():
-        # features_all.append([data['open'], data['high'], data['low'], data['close'], data['volume']])
-        features_all.append([data['close']])
+        if input_size==5:
+            features_all.append([data['open'], data['high'], data['low'], data['close'], data['volume']])
+        elif input_size==4:
+            features_all.append([data['open'], data['high'], data['low'], data['close']])
+        elif input_size==1:
+            features_all.append([data['close']])
+        else:
+            print('INPUT_SIZE is 1, 4, or 5')
+            sys.exit()
         label_all.append(data['label'])
 
     data_len = len(data_15min)
@@ -33,5 +41,5 @@ def get_slice(name, slice_len, label_extra, sample):
         one_label = label_all[label_begin:label_begin+label_extra+1]
         X.append(one_slice)
         Y.append(one_label)
-    print('Slices!')
+    print('Successful!\n')
     return X, Y
