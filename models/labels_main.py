@@ -1,12 +1,33 @@
+import sys
+import argparse
 import torch
 import torch.nn as nn
 import torch.utils.data as data
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import classification_report
+from pandas.core.frame import DataFrame
+
 
 import config
 from models.labels_dataset import get_slice
 from models.labels_models import TCN
+from models.labels_models import LSTM
+from models.labels_models import GRU
+
+
+class Logger(object):
+    def __init__(self, filename='default.log', stream=sys.stdout):
+        self.terminal = stream
+        self.log = open(filename, 'w')
+
+    def write(self, message):
+        self.terminal.write(message)
+        self.log.write(message)
+
+    def flush(self):
+        pass
 
 
 class TorchDataset(data.Dataset):
@@ -21,42 +42,68 @@ class TorchDataset(data.Dataset):
         return len(self.dataset_x)
 
 
-# hyper parameters
-slice_len = 320    # 320 or 64
-label_extra = 0
-sample = 1000
+parser = argparse.ArgumentParser(description='Icarus')
+parser.add_argument('--model', type=str, default='TCN',
+                    help='model (default: TCN)')
+parser.add_argument('--slice_length', type=int, default=64,
+                    help='slice length (default: 64)')
+parser.add_argument('--input_size', type=int, default=5,
+                    help='input size (default: 5)')
+args = parser.parse_args()
+print(args, '\n')
+
+# model
+MODEL = args.model  # TCN, LSTM, GRU
+
+slice_len = args.slice_length    # 64, 320
+sample = 10000
 
 BATCH_SIZE = 32
 LR = 0.0005
 EPOCH = 500
 torch.manual_seed(1)
-
-# TCN
-KERNEL_SIZE = 7
-LEVEL = 6
-NHID = 2
-channel_seq = [NHID] * LEVEL
-
-
-INPUT_SIZE = 1
+label_extra = 0
+INPUT_SIZE = args.input_size  # 1, 4, 5
 CLASSES = 3
-model = TCN(INPUT_SIZE, CLASSES, channel_seq, KERNEL_SIZE, label_extra)
 
+file_name = MODEL + '_' + str(slice_len) + '_' + str(INPUT_SIZE)
+sys.stdout = Logger('LNC/'+file_name + '.log', sys.stdout)
+
+if MODEL == 'TCN':
+    KERNEL_SIZE = 7
+    LEVEL = 6
+    NHID = 5
+    channel_seq = [NHID] * LEVEL
+    model = TCN(INPUT_SIZE, CLASSES, channel_seq, KERNEL_SIZE, label_extra)
+elif MODEL == 'LSTM':
+    HIDDEN_SIZE = 9
+    LAYER = 3
+    model = LSTM(INPUT_SIZE, HIDDEN_SIZE, LAYER, CLASSES)
+elif MODEL == 'GRU':
+    HIDDEN_SIZE = 11
+    LAYER = 3
+    model = GRU(INPUT_SIZE, HIDDEN_SIZE, LAYER, CLASSES)
+
+total_num = sum(p.numel() for p in model.parameters())
+print('model:{}  parameters:{:d}\n'.format(MODEL, total_num))
+
+# dataset
 if slice_len == 320:
     path = config.DATA_DIR / 'training' / 'labeled' / '80H_WIN'
 elif slice_len == 64:
     path = config.DATA_DIR / 'training' / 'labeled' / '16H_WIN'
-name_all = [f for f in path.iterdir() if f.is_file()]
 
-name_all = name_all[0:1]    # choose companies
-print(name_all)
+# name_all = [f for f in path.iterdir() if f.is_file()]
+# name_all = name_all[0:10]    # choose companies
+name_all = [path/'LNC_15min.csv']
+print('dataset:', name_all, '\n')
 
 x_train_all = []
 x_test_all = []
 y_train_all = []
 y_test_all = []
 for name in name_all:
-    X, Y = get_slice(name, slice_len, label_extra, sample)
+    X, Y = get_slice(name, slice_len, label_extra, sample, INPUT_SIZE)
     X_tensor = torch.Tensor(X)
     Y_tensor = torch.Tensor(Y).to(dtype=torch.int64)
     x_train, x_test, y_train, y_test = train_test_split(X_tensor, Y_tensor, test_size=0.2, random_state=1)
@@ -69,16 +116,18 @@ x_test_all = torch.cat(x_test_all, dim=0)
 y_train_all = torch.cat(y_train_all, dim=0)
 y_test_all = torch.cat(y_test_all, dim=0)
 
-print(x_train_all.shape)
-print(x_test_all.shape)
+print('training features:', x_train_all.shape)
+print('testing features:', x_test_all.shape)
 
 train_unique, train_count = torch.unique(y_train_all, return_counts=True)
 train_weight = torch.true_divide(train_count, int(torch.numel(y_train_all)))
-print(y_train_all.shape, train_unique, train_count, train_weight)
+print('training labels:', y_train_all.shape, train_unique, train_count, train_weight)
 test_unique, test_count = torch.unique(y_test_all, return_counts=True)
 test_weight = torch.true_divide(test_count, int(torch.numel(y_test_all)))
-print(y_test_all.shape, test_unique, test_count, test_weight)
+print('testing labels:', y_test_all.shape, test_unique, test_count, test_weight)
 
+
+# train and test
 CE_weight = torch.true_divide(1, train_weight)
 
 if torch.cuda.is_available():
@@ -88,12 +137,13 @@ if torch.cuda.is_available():
     y_train_all = y_train_all.cuda()
     y_test_all = y_test_all.cuda()
     CE_weight = CE_weight.cuda()
-    print('cuda = True')
+    print('\ncuda = True\n')
 
 dataset = TorchDataset(x_train_all, y_train_all)
 loader = data.DataLoader(dataset=dataset, batch_size=BATCH_SIZE, shuffle=True)
 
-criterion = nn.CrossEntropyLoss(weight=CE_weight)
+criterion_train = nn.CrossEntropyLoss(weight=CE_weight)
+criterion_test = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=LR)
 
 loss_list = []
@@ -101,7 +151,6 @@ accuracy_list = []
 loss_test_list = []
 accuracy_test_list = []
 for epoch in range(EPOCH):
-    y_test_all = y_test_all.cuda()
     accuracy_count = 0
     loss_epoch = 0
 
@@ -110,7 +159,7 @@ for epoch in range(EPOCH):
         outputs = model(batch_x)
         outputs = outputs.view(-1, 3)
         batch_y = batch_y.view(-1)
-        loss = criterion(outputs, batch_y)
+        loss = criterion_train(outputs, batch_y)
         loss.backward()
         optimizer.step()
 
@@ -126,38 +175,53 @@ for epoch in range(EPOCH):
         outputs_test = model(x_test_all)
         outputs_test = outputs_test.view(-1, 3)
         y_test_all = y_test_all.view(-1)
-        loss_test = criterion(outputs_test, y_test_all)
+        loss_test = criterion_test(outputs_test, y_test_all)
         y_pred_test = outputs_test.argmax(dim=1)
         accuracy_test = sum(torch.eq(y_test_all, y_pred_test)).item()/(len(y_test_all)*(label_extra+1))
-        loss_test_list.append(loss_test)
+        loss_test_list.append(loss_test.item())
         accuracy_test_list.append(accuracy_test)
 
     if epoch % 10 == 0:
         print('epoch:{:d} \ttrain loss:{:f} \ttrain accuracy:{:f} \ttest loss:{:f} \ttest accuracy:{:f}'.format(epoch, loss_epoch.item(), accuracy, loss_test, accuracy_test))
 
-        plt.plot(y_test_all.cpu())
-        plt.plot(y_pred_test.cpu())
-        plt.title('epoch={:d} test accuracy={:6f}'.format(epoch, accuracy_test))
-        plt.show()
+    if epoch == EPOCH-1:
+        ture_test = y_test_all.cpu()
+        pred_test = y_pred_test.cpu()
+        print('epoch:{:d} '.format(epoch))
+        print(file_name)
+        print(confusion_matrix(ture_test, pred_test))
+        print(classification_report(ture_test, pred_test))
 
-plt.subplot(221)
-plt.plot(loss_list)
-plt.title('train loss')
-plt.xlabel('epoch')
+#         plt.plot(ture_test)
+#         plt.plot(pred_test)
+#         plt.title('epoch={:d} test accuracy={:6f}'.format(epoch, accuracy_test))
+#         plt.show()
+#
+# plt.subplot(221)
+# plt.plot(loss_list)
+# plt.title('train loss')
+# plt.xlabel('epoch')
+#
+# plt.subplot(222)
+# plt.plot(accuracy_list)
+# plt.title('train accuracy')
+# plt.xlabel('epoch')
+#
+# plt.subplot(223)
+# plt.plot(loss_test_list)
+# plt.title('test loss')
+# plt.xlabel('epoch')
+#
+# plt.subplot(224)
+# plt.plot(accuracy_test_list)
+# plt.title('test accuracy')
+# plt.xlabel('epoch')
+# # plt.savefig('{:f}_epoch{:d}.png'.format(LR, EPOCH))
+# plt.show()
 
-plt.subplot(222)
-plt.plot(accuracy_list)
-plt.title('train accuracy')
-plt.xlabel('epoch')
-
-plt.subplot(223)
-plt.plot(loss_test_list)
-plt.title('test loss')
-plt.xlabel('epoch')
-
-plt.subplot(224)
-plt.plot(accuracy_test_list)
-plt.title('test accuracy')
-plt.xlabel('epoch')
-# plt.savefig('{:f}_epoch{:d}.png'.format(LR, EPOCH))
-plt.show()
+key = {'train loss': loss_list,
+       'train accuracy': accuracy_list,
+       'test loss': loss_test_list,
+       'test accuracy': accuracy_test_list}
+data = DataFrame(key)
+data.to_csv('LNC/' + file_name + '.csv')
