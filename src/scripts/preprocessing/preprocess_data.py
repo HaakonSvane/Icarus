@@ -76,7 +76,7 @@ def trim_ends(dframe: pd.DataFrame, start_trim: int = int(HOURS_AHEAD / DT) - 1,
 def calc_recurrence(dframe: pd.DataFrame)->np.array:
     if 'label' in dframe:
         dframe = dframe.drop('label', axis=1)
-    rec = prep.Utility.calc_recurrence_plot(dframe, percentile=REC_PERC, distance_metric=REC_DIST_MET)
+    rec = prep.Utility.calc_recurrence_plot(dframe, percentile=REC_PERC, distance_metric=REC_DIST_MET, debug_plot=True)
     prog_bar.update(1 / tasks * 100)
     return rec
 
@@ -91,6 +91,8 @@ def save_recurrence_plot(arr: np.array, filename: str, subdir: str = None, exten
 
 
 syms = [d.name for d in (config.DATA_DIR / 'preprocessing' / 'raw').iterdir() if d.is_dir()]
+syms = ['AAPL']
+
 for sym in syms:
     prog_bar.reset()
     prog_bar.set_description(sym, refresh=True)
@@ -100,9 +102,9 @@ for sym in syms:
     data = add_RSI(data)
     data = normalize(data)
     data = trim_ends(data)
-    #prep.Utility.cluster_data(data)
-    prep.save_dataframe_to_file(data,sym+"_15min.csv", sub_dir=Path('labeled'))
-
+    clusts = prep.Utility.cluster_data(data)
+    for clust in clusts:
+        calc_recurrence(clust)
     prog_bar.update(100-prog_bar.n)
 
 prog_bar.close()

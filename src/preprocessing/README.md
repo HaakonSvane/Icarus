@@ -34,26 +34,28 @@ if we set it to 3 days since a bigger window would smooth out any small disturba
 All the parameters used in the preprocessing stage can be found in the *prep_config.py* file for this package.
 Below is a table of explanations and values used for the preprocessing:
 
-|Parameter      |Value  |Description                                                                                                |
+|Parameter      |Value  |Description                                                                                                            |
 |:---|:---:|:---:|
-|DT             |0.25       |Number of hours between each datapoint in the raw data.                                                |
-|LAB_CONV_FUNC  |'cubic'    |The convolution window to use for the labeler.                                                         |
-|HOURS_AHEAD    |150        |Hours ahead used to determine the label points.                                                        |
-|HOURS_BEHIND   |150        |Hours behind used in normalization.                                                                    |
-|THRESH_BUY     |0.015      |Threshold for determining a buy point.                                                                 |
-|THRESH_SELL    |0.015      |Threshold for determining a sell point.                                                                | 
-|MED_WIN        |299        |Walking median window size for the custom labeler.                                                     |
-|START_TRADE    |'09:30'    |Trading hours open time.                                                                               |
-|END_TRADE      |'16:00'    |Trading hours close time.                                                                              |
-|CLUSTER_SIZE   |130        |Minimum size of the clusters to consider. The size n will result in images of size n x n.              |
-|REC_PERC       |20         |nth percentile for which distances in the phase plot fall under are considered in the recurrence plot. |
-|REC_DIST_MET   |'euclidean'|Distance metric to use in the recurrence plots.                                                        |
+|DT             |0.25       |Number of hours between each datapoint in the raw data.                                                            |
+|LAB_CONV_FUNC  |'cubic'    |The convolution window to use for the labeler.                                                                     |
+|HOURS_AHEAD    |150        |Hours ahead used to determine the label points.                                                                    |
+|HOURS_BEHIND   |150        |Hours behind used in normalization.                                                                                |
+|THRESH_BUY     |0.015      |Threshold for determining a buy point.                                                                             |
+|THRESH_SELL    |0.015      |Threshold for determining a sell point.                                                                            | 
+|MED_WIN        |299        |Walking median window size for the custom labeler.                                                                 |
+|START_TRADE    |'09:30'    |Trading hours open time.                                                                                           |
+|END_TRADE      |'16:00'    |Trading hours close time.                                                                                          |
+|CLUSTER_SIZE   |26         |Minimum size of the clusters to consider. The size n will result in images of size n x n.                          |
+|REC_PERC       |10         |nth percentile for which distances in the phase plot fall under are considered in the recurrence plot.             |
+|REC_DIST_MET   |'euclidean'|Distance metric to use in the recurrence plots.                                                                    |
+|REC_ALPHA      |15         | Factor used in the exponential grayscale mapping of the distances over the nth percentile in the recurrence plot. |
 
 ### Normalization
 Normalizing the data before feeding it into the neural network can increase the performance of the network. 
 Financial data can be hard to normalize, and there are many approaches to take when doing so. First comes the determination
 of *what* to normalize, then comes the determination of how to normalize it. We could for example choose to normalize the
-closing price of a stock *C(t)* for some time *t*, but we would then need to determine
+closing price of a stock *C(t)* for some time *t*, but we would then need to determine how this is to be normalized.
+Extra care must also be taken so that no future information is incorporated into the normalizattion process.
 
 Normalization can have severe effects on the performance of networks. In 
 [Efficient approach to Normalization of Multimodal Biometric Scores](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.259.2703&rep=rep1&type=pdf),
@@ -65,7 +67,7 @@ the normal tanh estimator, but has the same qualities such as robustness.
 The modified tanh normalizer was again modified to yield an output range of \[-1, 1\].
 This results in a mean of 0 and points within one standard deviation at values around \[0.05, 0.05\]. This new
 *modified modified* tanh normalizer (name pending) was used on all the data except for the RSI value which was divided
-100 to clamp it to the same interval as the other variables.
+by 100 to clamp it to the same interval as the other variables.
 
 ### Clustering
 In order to convert the time-series data to images of the same resolution, successive data points with the same label
@@ -78,6 +80,17 @@ from the equally partitioned clusters of data. The idea is to have the network f
 which can be generalized during training. Visually inspecting the recurrence plots generated in this process seem to
 indicate that the data resembles the characteristics of brownian motion. This is expected, but not appreciated. 
 
-The euclidean distance metric was used in creating the recurrence, and the tolerance of the distance was set such that
-only distances under the *REC_PERC* percentile are shown in the plot.
+There are two datasets created from the recurrence plots:
+1. **Hard recurrence**: This is the normal recurrence plot. Phase space distances below the nth percentile are shown as 
+black pixels in the images. The rest are white.
+2. **Soft recurrence**: This is a proposed modification to the normal recurrence plots. Phase space distances below the nth percentile are shown as
+black pixels, while values over the nth percentile are exponentially mapped to values in the range \[1, 0\] where 1 is a black pixel and 0
+is a white pixel. This incorporates more information into the recurrence plot, but the significance of it has yet to be tested.
+
+
+Below are examples of how these plots differ. The dataset used is 125 hours (500 datapoints) of AAPL stock, year 2018:
+
+![](images/AAPL_HARD.png)   |  ![](images/AAPL_SOFT.png)
+:-------------------------: | :-------------------------:
+Hard recurrence             |  Soft recurrence
     

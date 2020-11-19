@@ -107,16 +107,28 @@ class _Utility:
         ax.set_zlabel(ax3)
         plt.show()
 
-    #TODO: Work on this
     @staticmethod
     def cluster_data(frame: pd.DataFrame, min_cluster_size: int = CLUSTER_SIZE, label_col_name: str = 'label'):
         clusters = frame.groupby((frame[label_col_name].shift() != frame[label_col_name]).cumsum())
-        print(clusters.size().values >= min_cluster_size)
-        clusters = clusters[clusters.size().values >= min_cluster_size]
-        print(clusters.size())
+        valid = (clusters.size() >= min_cluster_size)
+        valid = valid.index[valid].to_numpy()
+
+        result = []
+        for i in valid:
+            # Getting the indicies for frame in group i
+            inds = clusters.groups[i].values
+
+            # In the case that the cluster is bigger than min_cluster_size, we trim it down to this size
+            mid = len(inds) // 2
+            l_ind = mid - min_cluster_size // 2
+            new_inds = inds[l_ind:l_ind + min_cluster_size]
+            result.append(frame.iloc[new_inds])
+
+        return result
 
     @staticmethod
-    def calc_recurrence_plot(frame: pd.DataFrame, percentile: int = 2, distance_metric: str = 'euclidean', debug_plot: bool = False) -> np.array:
+    def calc_recurrence_plot(frame: pd.DataFrame, percentile: int = 2, distance_metric: str = 'euclidean',
+                             smooth: bool = False, alpha: float = 10, debug_plot: bool = False) -> np.array:
         '''
         Calculates a recurrence plot (2D-array of values 0 or 1) using a metric on the phase space.
         A recurrence plot is a 2D representation of when a trajectory in phase space at time i is roughly in the same
@@ -125,8 +137,12 @@ class _Utility:
 
         :param frame: dataframe containing all the columns to use in the phase space.
         :param percentile:  The points that are below the nth percentile in the distance defined by the distance metric
-                            will be included.
+                            will be included. Defaults to 2.
         :param distance_metric: The distance metric to use on the phase space. Defaults to 'euclidean'.
+        :param smooth: Whether or not to include values that are over the nth percentile as well. These are
+            exponentially mapped to a value between 1 and 0 (grayscaling). Defaults to False
+        :param alpha: The factor used in the exponential mapping for values that are over the nth percentile.
+            Defaults to 10.
         :param debug_plot: Whether or not to plot the resulting recurrence plot or not. For debugging and exploration.
         :return: 2D-array of the results from the recurrence plot.
         '''
@@ -136,12 +152,18 @@ class _Utility:
         # with zeros on the main diagonal since the distance form each point to itself is always zero.
         dist = cdist(y, y, metric=distance_metric)
         perc = np.percentile(dist, percentile)
-        img = np.where(dist <= perc, 1, 0)
+
+        img = None
+        if smooth:
+            lin_cap = lambda d, p: np.exp(-alpha * (d - p)) if d > p else 1
+            fun = np.vectorize(lin_cap, otypes=[np.float])
+            img = fun(dist, perc)
+
+        else:
+            img = np.where(dist <= perc, 1, 0)
 
         if debug_plot:
-            sns.set()
-            plt.imshow(img, cmap='binary', origin='lower')
+            plt.imshow(img, cmap='Greys', origin='lower')
             plt.show()
 
         return img
-
