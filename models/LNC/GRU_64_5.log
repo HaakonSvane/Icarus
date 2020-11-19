@@ -1,0 +1,79 @@
+model:GRU  parameters:2214
+
+dataset: [PosixPath('/home/leic/Desktop/Icarus/data/training/labeled/16H_WIN/LNC_15min.csv')] 
+
+Begin to slice.
+Successful!
+
+training features: torch.Size([8000, 64, 5])
+testing features: torch.Size([2000, 64, 5])
+training labels: torch.Size([8000, 1]) tensor([0, 1, 2]) tensor([1846, 4281, 1873]) tensor([0.2307, 0.5351, 0.2341])
+testing labels: torch.Size([2000, 1]) tensor([0, 1, 2]) tensor([ 497, 1032,  471]) tensor([0.2485, 0.5160, 0.2355])
+
+cuda = True
+
+epoch:0 	train loss:274.685577 	train accuracy:0.535125 	test loss:1.089053 	test accuracy:0.516000
+epoch:10 	train loss:269.884369 	train accuracy:0.406250 	test loss:1.096960 	test accuracy:0.378000
+epoch:20 	train loss:267.029358 	train accuracy:0.452000 	test loss:1.070602 	test accuracy:0.435000
+epoch:30 	train loss:265.094330 	train accuracy:0.480750 	test loss:1.041451 	test accuracy:0.502500
+epoch:40 	train loss:262.971161 	train accuracy:0.516500 	test loss:1.046703 	test accuracy:0.511000
+epoch:50 	train loss:260.686981 	train accuracy:0.535375 	test loss:1.040989 	test accuracy:0.517000
+epoch:60 	train loss:259.349701 	train accuracy:0.559125 	test loss:1.038280 	test accuracy:0.516500
+epoch:70 	train loss:259.490265 	train accuracy:0.555875 	test loss:1.021450 	test accuracy:0.545000
+epoch:80 	train loss:259.615814 	train accuracy:0.529625 	test loss:1.022018 	test accuracy:0.550500
+epoch:90 	train loss:263.594116 	train accuracy:0.468375 	test loss:1.075653 	test accuracy:0.462500
+epoch:100 	train loss:258.629852 	train accuracy:0.526875 	test loss:1.045468 	test accuracy:0.505000
+epoch:110 	train loss:255.309998 	train accuracy:0.535875 	test loss:1.028763 	test accuracy:0.522000
+epoch:120 	train loss:254.721664 	train accuracy:0.537375 	test loss:1.027021 	test accuracy:0.510500
+epoch:130 	train loss:254.313141 	train accuracy:0.539125 	test loss:1.035265 	test accuracy:0.510500
+epoch:140 	train loss:254.300644 	train accuracy:0.534250 	test loss:1.020139 	test accuracy:0.524000
+epoch:150 	train loss:252.671906 	train accuracy:0.540000 	test loss:1.015089 	test accuracy:0.530500
+epoch:160 	train loss:252.237534 	train accuracy:0.538875 	test loss:1.020111 	test accuracy:0.519500
+epoch:170 	train loss:250.322952 	train accuracy:0.544875 	test loss:1.026122 	test accuracy:0.519500
+epoch:180 	train loss:248.759750 	train accuracy:0.548750 	test loss:1.003429 	test accuracy:0.540000
+epoch:190 	train loss:247.564331 	train accuracy:0.558000 	test loss:1.015175 	test accuracy:0.523000
+epoch:200 	train loss:247.127823 	train accuracy:0.554750 	test loss:1.014079 	test accuracy:0.525000
+epoch:210 	train loss:247.063385 	train accuracy:0.557375 	test loss:0.999556 	test accuracy:0.535000
+epoch:220 	train loss:248.549011 	train accuracy:0.557000 	test loss:0.997743 	test accuracy:0.541000
+epoch:230 	train loss:247.579727 	train accuracy:0.559000 	test loss:0.993279 	test accuracy:0.553000
+epoch:240 	train loss:242.569366 	train accuracy:0.576750 	test loss:0.978883 	test accuracy:0.564000
+epoch:250 	train loss:250.860657 	train accuracy:0.554625 	test loss:0.977098 	test accuracy:0.577000
+epoch:260 	train loss:239.793503 	train accuracy:0.584250 	test loss:0.969528 	test accuracy:0.577500
+epoch:270 	train loss:243.943909 	train accuracy:0.567000 	test loss:0.996839 	test accuracy:0.544500
+epoch:280 	train loss:238.289139 	train accuracy:0.577125 	test loss:0.959085 	test accuracy:0.572500
+epoch:290 	train loss:240.067551 	train accuracy:0.578875 	test loss:0.965518 	test accuracy:0.575500
+epoch:300 	train loss:240.343216 	train accuracy:0.592625 	test loss:0.971098 	test accuracy:0.554500
+epoch:310 	train loss:241.128494 	train accuracy:0.581500 	test loss:0.959256 	test accuracy:0.584500
+epoch:320 	train loss:235.095352 	train accuracy:0.605375 	test loss:0.953815 	test accuracy:0.592500
+epoch:330 	train loss:244.165604 	train accuracy:0.558500 	test loss:0.962698 	test accuracy:0.575500
+epoch:340 	train loss:233.690628 	train accuracy:0.613000 	test loss:0.948772 	test accuracy:0.590500
+epoch:350 	train loss:244.879288 	train accuracy:0.577125 	test loss:0.960211 	test accuracy:0.583500
+epoch:360 	train loss:247.760254 	train accuracy:0.572000 	test loss:0.976139 	test accuracy:0.552500
+epoch:370 	train loss:251.726730 	train accuracy:0.565625 	test loss:0.975204 	test accuracy:0.562500
+epoch:380 	train loss:231.843445 	train accuracy:0.625125 	test loss:0.935305 	test accuracy:0.615000
+epoch:390 	train loss:234.648117 	train accuracy:0.611875 	test loss:0.962727 	test accuracy:0.570000
+epoch:400 	train loss:233.024429 	train accuracy:0.622250 	test loss:0.935122 	test accuracy:0.600000
+epoch:410 	train loss:233.070587 	train accuracy:0.607250 	test loss:0.952855 	test accuracy:0.588000
+epoch:420 	train loss:229.990662 	train accuracy:0.629375 	test loss:0.934018 	test accuracy:0.609500
+epoch:430 	train loss:247.682114 	train accuracy:0.567750 	test loss:0.969994 	test accuracy:0.566500
+epoch:440 	train loss:249.147751 	train accuracy:0.577125 	test loss:0.971483 	test accuracy:0.577000
+epoch:450 	train loss:245.440414 	train accuracy:0.577125 	test loss:0.961235 	test accuracy:0.578500
+epoch:460 	train loss:231.763519 	train accuracy:0.621875 	test loss:0.939215 	test accuracy:0.592500
+epoch:470 	train loss:258.969666 	train accuracy:0.555750 	test loss:1.003584 	test accuracy:0.547000
+epoch:480 	train loss:236.548889 	train accuracy:0.607000 	test loss:0.946337 	test accuracy:0.596500
+epoch:490 	train loss:232.579514 	train accuracy:0.619125 	test loss:0.938327 	test accuracy:0.615500
+epoch:499 
+GRU_64_5
+[[262 179  56]
+ [192 712 128]
+ [ 98 215 158]]
+              precision    recall  f1-score   support
+
+           0       0.47      0.53      0.50       497
+           1       0.64      0.69      0.67      1032
+           2       0.46      0.34      0.39       471
+
+    accuracy                           0.57      2000
+   macro avg       0.53      0.52      0.52      2000
+weighted avg       0.56      0.57      0.56      2000
+
