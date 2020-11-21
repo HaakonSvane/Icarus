@@ -74,7 +74,7 @@ CLASSES = 3
 dir_name = 'LNC'
 
 file_name = str(slice_len) + '_' + str(INPUT_SIZE) + '_' + args.normalization + '_' + MODEL
-sys.stdout = Logger(dir_name + '/' + file_name + '.log', sys.stdout)
+sys.stdout = Logger(dir_name + '/' + file_name + '.txt', sys.stdout)
 
 if MODEL == 'TCN':
     KERNEL_SIZE = 7
