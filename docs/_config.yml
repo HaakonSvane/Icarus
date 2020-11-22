@@ -1,0 +1,9 @@
+theme: jekyll-theme-minimal
+title: TITLE
+description: DESCRIPTION
+show_downloads: True
+navigation:
+  - title: Home
+    url: /
+  - title: Labeling
+    url: labeling
