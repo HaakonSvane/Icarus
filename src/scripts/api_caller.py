@@ -43,9 +43,9 @@ def trim_listings(frame, last_n_years=2):
 
 
 if __name__ == "__main__":
-    path_sp = config.DATA_DIR / 'preprocessing' / 'listings' / 'SP500_companies.csv'
-    path_all = config.DATA_DIR / 'preprocessing' / 'listings' / 'alpha_vantage_companies.csv'
-    path_raw = config.DATA_DIR / 'preprocessing' / 'raw'
+    path_sp = config.DATA_DIR / 'normalization' / 'listings' / 'SP500_companies.csv'
+    path_all = config.DATA_DIR / 'normalization' / 'listings' / 'alpha_vantage_companies.csv'
+    path_raw = config.DATA_DIR / 'normalization' / 'raw'
 
     companies_to_find = pd.read_csv(path_sp, index_col=None)
     all_companies = pd.read_csv(path_all, index_col=None)

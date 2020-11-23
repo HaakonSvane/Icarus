@@ -1,2 +1,0 @@
-# Normalizing
-### Hello world!

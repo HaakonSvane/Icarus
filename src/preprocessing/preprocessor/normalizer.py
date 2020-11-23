@@ -26,13 +26,14 @@ class _Normalizer:
             raise ValueError(f'Value {val} is not valid. Must be an integer or float.')
         self._dt = val
 
-    def modfified_tanh(self, arr: np.array, debug_plot: bool = False) -> np.array:
+    def modfified_tanh(self, arr: np.array, debug_plot: bool = False, title_name: str = '') -> np.array:
 
         '''
         Takes in a 1D numpy array and returns the normalized array using the modified tanh estimator.
 
         :param arr: 1D-array of values to normalize.
         :param debug_plot: Whether or not to plot the results of the normalizer. For debugging and exploration.
+        :param title_name: If debug plot is set to True, the tile name is the name of the array that is shown in the plot.
         :return: Normalized array with shape len(arr).
         '''
 
@@ -58,11 +59,11 @@ class _Normalizer:
             sns.set()
             fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True)
             ax1.plot(np.arange(n_points), arr, label='Original array')
-            ax1.plot(np.arange(look_back - 1, n_points), mean, label='Mean or original')
+            ax1.plot(np.arange(look_back - 1, n_points), mean, label='Running mean of original')
             ax2.plot(np.arange(n_points), norm_arr, label='Normalized array')
             ax1.legend()
             ax2.legend()
-            plt.suptitle('Debug plot for the modified tanh normalizer.')
+            plt.suptitle(f'Normalization of {"array" if title_name == "" else title_name}.')
             plt.show()
 
         return norm_arr

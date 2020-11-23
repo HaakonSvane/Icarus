@@ -1,0 +1,8 @@
+<div>
+    <h3> Table of contents: </h3>
+    <ul>
+        {% for item in include.PAGE.categories %}
+            <li><a href="#{{ item.id }}">{{ item.title }}</a></li>
+        {% endfor %}
+    </ul>
+</div>

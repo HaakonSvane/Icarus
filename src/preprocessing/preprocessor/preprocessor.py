@@ -13,7 +13,7 @@ import config
 
 '''
     Preprocessor:
-        This module is responsible for implementing all the computations that are used in the preprocessing stage
+        This module is responsible for implementing all the computations that are used in the normalization stage
         of the data. 
 '''
 

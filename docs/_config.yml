@@ -5,20 +5,11 @@ description: >-
   Project for TDT4173 - Machine Learning at NTNU
 github_username:  HaakonSvane
 show_downloads: True
-navigation:
-  - title: Home
-    url: /
-  - title: Labeling
-    url: labeling
-  - title: Normalizing
-    url: normalizing
-  - title: Data sourcing
-    url: data-sourcing
 
 theme: minima
 plugins:
   - jekyll-feed
-
+  -
 # Exclude from processing.
 # The following items will not be processed, by default.
 # Any item listed under the `exclude:` key here will be automatically added to

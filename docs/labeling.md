@@ -1,2 +1,5 @@
-# Labeling
+---
+title: Labeling
+---
+
 ### Hello world!
