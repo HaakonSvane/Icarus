@@ -5,12 +5,16 @@
 This package is responsible for implementing all the computations that are used in the preprocessing stage
 of the data.
 
-The data goes through multiple stages of processing using this package. The general workflow is as follows:
-1. Raw data gets loaded into memory.
-2. The data is trimmed down to normal working hours (09:30-16:00) since some of the equities list before/after-hour trading.
-3. The stocklabeler labels the data.
-4. RSI is calculated for the equity.
-5. The variables in each datapoints are normalized.
-6. The data is saved as a csv file in data/training.
+The main class of the package is the *Preprocessor* class. This class is primarily a container for 4 other processing
+classes that each serve different needs. Below is a table of the instance classes that are accessible through *Preprocessor*
+
+|Name       |Description |
+|:---:|:---|
+|Normalizer |Implements normalizing functions that act on arrays of data. |
+|Utility    |Implements several utility functions such as data loaders, phase space plotters and more.|
+|Function   |Implements functions that act on the data such as calculating RSI.|
+|DataLabeler|Implements functions that i|
+
+
 
  

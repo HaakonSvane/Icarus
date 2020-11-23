@@ -16,17 +16,25 @@ categories:
 
 ## Pipeline
 The preprocessing pipeline consists of several stages. After the data has been [sourced](data-sourcing.md),
-it is processed through a series of  
+it is processed through a series of stages. These are:
+
+1. Raw data gets loaded into memory.
+2. The data is trimmed down to normal working hours (09:30-16:00) since some of the equities list before/after-hour trading.
+3. The stocklabeler labels the data.
+4. [RSI](https://www.investopedia.com/terms/r/rsi.asp) is calculated for the equity.
+5. The variables in each datapoint are normalized.
+6. Each end of the data is trimmed to remove edge-effects from running averages / convolutions.
+7. The data is saved as a csv file in data/training. 
 
 
 <div id="winsize">
 </div>
 
 ### Window size:
-The labeler uses "future" datapoints $$P(t+ndt)$$ to determine the label for a datapoint *P(t)*.
+The labeler uses "future" datapoints $P(t+ndt), n \in \mathbb{Z}^{+}$ to determine the label for a datapoint $$P(t)$$.
 In practice, this is done using one or several convolutions depending on which labeling mode is used. Since the label is the only feature we
-wish to use future data to determine, the rest of the processing pipeline (normalization, RSI, ...) MUST be restricted to previous datapoints P(t-n*dt).
-Because of the nature of discrete non-shifted convolutions, for any datapoint *P(t)*, values that are *window_size*/2 points
+wish to use future data to determine, the rest of the processing pipeline (normalization, RSI, ...) **must** be restricted to previous datapoints $$P(t-n*dt)$$.
+Because of the nature of discrete non-shifted convolutions, for any datapoint $P(t)$, values that are *window_size*/2 points
 away from the point in both directions are used. This means that for a window of 2 days, the labeler will look forward 1 day
 (and also 1 day backwards) when determining the label.
 
@@ -38,24 +46,24 @@ if we set it to 3 days since a bigger window would smooth out any small disturba
 </div>
 
 ### Parameters
-All the parameters used in the preprocessing stage can be found in the *prep_config.py* file for this package.
+All the parameters used in the preprocessing stage can be found in the *prep_config.py* module in *src/preprocessing/preprocessor*.
 Below is a table of explanations and values used for the preprocessing:
 
 |Parameter      |Value  |Description                                                                                                            |
 |:---|:---:|:---:|
-|DT             |0.25       |Number of hours between each datapoint in the raw data.                                                            |
-|LAB_CONV_FUNC  |'cubic'    |The convolution window to use for the labeler.                                                                     |
-|HOURS_AHEAD    |150        |Hours ahead used to determine the label points.                                                                    |
-|HOURS_BEHIND   |150        |Hours behind used in normalization.                                                                                |
-|THRESH_BUY     |0.015      |Threshold for determining a buy point.                                                                             |
-|THRESH_SELL    |0.015      |Threshold for determining a sell point.                                                                            |
-|MED_WIN        |299        |Walking median window size for the custom labeler.                                                                 |
-|START_TRADE    |'09:30'    |Trading hours open time.                                                                                           |
-|END_TRADE      |'16:00'    |Trading hours close time.                                                                                          |
-|CLUSTER_SIZE   |26         |Minimum size of the clusters to consider. The size n will result in images of size n x n.                          |
-|REC_PERC       |10         |nth percentile for which distances in the phase plot fall under are considered in the recurrence plot.             |
-|REC_DIST_MET   |'euclidean'|Distance metric to use in the recurrence plots.                                                                    |
-|REC_ALPHA      |15         | Factor used in the exponential grayscale mapping of the distances over the nth percentile in the recurrence plot. |
+|$\texttt{DT}$             |0.25       |Number of hours between each datapoint in the raw data.                                                            |
+|$\texttt{LAB_CONV_FUNC}$  |'cubic'    |The convolution window to use for the labeler.                                                                     |
+|$\texttt{HOURS_AHEAD}$    |150        |Hours ahead used to determine the label points.                                                                    |
+|$\texttt{HOURS_BEHIND}$   |150        |Hours behind used in normalization.                                                                                |
+|$\texttt{THRESH_BUY}$     |0.015      |Threshold for determining a buy point.                                                                             |
+|$\texttt{THRESH_SELL}$    |0.015      |Threshold for determining a sell point.                                                                            |
+|$\texttt{MED_WIN}$        |299        |Walking median window size for the custom labeler.                                                                 |
+|$\texttt{START_TRADE}$    |'09:30'    |Trading hours open time.                                                                                           |
+|$\texttt{END_TRADE}$      |'16:00'    |Trading hours close time.                                                                                          |
+|$\texttt{CLUSTER_SIZE}$   |26         |Minimum size of the clusters to consider. The size n will result in images of size n x n.                          |
+|$\texttt{REC_PERC}$       |10         |nth percentile for which distances in the phase plot fall under are considered in the recurrence plot.             |
+|$\texttt{REC_DIST_MET}$   |'euclidean'|Distance metric to use in the recurrence plots.                                                                    |
+|$\texttt{REC_ALPHA}$      |15         | Factor used in the exponential grayscale mapping of the distances over the nth percentile in the recurrence plot. |
 
 <div id="normalization">
 </div>
