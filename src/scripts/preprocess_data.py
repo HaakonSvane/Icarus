@@ -77,7 +77,7 @@ def trim_ends(dframe: pd.DataFrame, start_trim: int = int(HOURS_AHEAD / DT) - 1,
     return dframe.reset_index(drop=True)
 
 
-def calc_recurrence(dframe: pd.DataFrame, smooth=True) -> np.array:
+def calc_recurrence(dframe: pd.DataFrame, smooth=2) -> np.array:
     if 'label' in dframe:
         dframe = dframe.drop('label', axis=1)
     rec = prep.Utility.calc_recurrence_plot(dframe, percentile=REC_PERC, distance_metric=REC_DIST_MET, debug_plot=False,

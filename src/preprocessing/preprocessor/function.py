@@ -30,7 +30,7 @@ class _Function:
             raise ValueError(f'Value {val} is not valid. Must be an integer or float.')
         self._dt = val
 
-    def RSI(self, frame: pd.DataFrame, open_name: str = 'open', close_name: str = 'close') -> np.array:
+    def RSI(self, frame: pd.DataFrame, open_name: str = 'open', close_name: str = 'close', dt: float = DT) -> np.array:
         '''
         Calculates the RSI for a dataframe. The frame must contain a column with open and close prices.
 
@@ -49,7 +49,7 @@ class _Function:
         rsi = np.zeros(n_points)
         rsi.fill(np.nan)
 
-        look_back = int(self.hours_behind / DT)
+        look_back = int(self.hours_behind / dt)
 
         diffs = (frame[close_name] - frame[open_name]).values
         U = f_U(diffs)
