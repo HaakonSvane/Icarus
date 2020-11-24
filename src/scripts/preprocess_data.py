@@ -43,21 +43,36 @@ def label(dframe: pd.DataFrame) -> pd.DataFrame:
 
 def normalize(dframe: pd.DataFrame) -> pd.DataFrame:
     norm_frame = pd.DataFrame()
-    norm_frame['volume'] = prep.Normalizer.modfified_tanh(dframe['volume'].values, debug_plot=True, title_name='volume')
+
+    norm_frame['open'] = prep.Normalizer.modfified_tanh(dframe['open'].values, debug_plot=False,
+                                                        title_name='open price')
     prog_bar.update(1 / tasks * 100)
-    norm_frame['close'] = prep.Normalizer.modfified_tanh(dframe['close'].values, debug_plot=True, title_name='close price')
-    prog_bar.update(1 / tasks * 100)
-    norm_frame['open'] = prep.Normalizer.modfified_tanh(dframe['open'].values, debug_plot=True, title_name='open price')
-    prog_bar.update(1 / tasks * 100)
+
     norm_frame['high'] = prep.Normalizer.modfified_tanh(
-        (dframe['high'] - (dframe['open'] + dframe['close']) / 2).values, debug_plot=True, title_name='high diff')
+        (dframe['high'] - (dframe['open'] + dframe['close']) / 2).values, debug_plot=False, title_name='high diff')
+
     prog_bar.update(1 / tasks * 100)
-    norm_frame['low'] = prep.Normalizer.modfified_tanh((dframe['low'] - (dframe['open'] + dframe['close']) / 2).values, debug_plot=True, title_name='low diff')
+
+    norm_frame['low'] = prep.Normalizer.modfified_tanh((dframe['low'] - (dframe['open'] + dframe['close']) / 2).values,
+                                                       debug_plot=False, title_name='low diff')
+
     prog_bar.update(1 / tasks * 100)
+
+    norm_frame['close'] = prep.Normalizer.modfified_tanh(dframe['close'].values, debug_plot=False, title_name='close price')
+
+    prog_bar.update(1 / tasks * 100)
+
+    norm_frame['volume'] = prep.Normalizer.modfified_tanh(dframe['volume'].values, debug_plot=False, title_name='volume')
+
+    prog_bar.update(1 / tasks * 100)
+
     norm_frame['label'] = dframe['label']
+
     prog_bar.update(1 / tasks * 100)
+
     if 'rsi' in dframe:
         norm_frame['rsi'] = dframe['rsi'] / 100
+
     prog_bar.update(1 / tasks * 100)
     return norm_frame
 
@@ -96,20 +111,26 @@ def save_recurrence_plot(arr: np.array, filename: str, subdir: str = None, exten
     prog_bar.update(1 / tasks * 100)
 
 
-syms = [d.name for d in (config.DATA_DIR / 'normalization' / 'raw').iterdir() if d.is_dir()]
-syms = ['AAPL']
+syms = [d.name for d in (config.DATA_DIR / 'preprocessing' / 'raw').iterdir() if d.is_dir()]
+syms = ['LNC', 'AAPL', 'MSFT', 'NOV', 'MMM', 'IBM', 'GOOG', 'USB']
 
 for sym in syms:
     prog_bar.reset()
     prog_bar.set_description(sym, refresh=True)
-    path = config.DATA_DIR / 'normalization' / 'raw' / sym
+    path = config.DATA_DIR / 'preprocessing' / 'raw' / sym
     data = import_and_trim(path)
     data = label(data)
     data = add_RSI(data)
-    data = normalize(data)
+    data = data.drop('time', axis=1)
+    data2 = normalize(data)
+
+    data2 = trim_ends(data2)
     data = trim_ends(data)
 
-    #clusts = prep.Utility.cluster_data(data, min_cluster_size=CLUSTER_SIZE)
+    save_data(data, f'{sym}_W{int(HOURS_AHEAD * 2/DT)}H_{int(60 * DT)}min_ORIG.csv', f'labeled/ORIG/W{int(HOURS_AHEAD * 2/DT)}H')
+    save_data(data2, f'{sym}_W{int(HOURS_AHEAD * 2/DT)}H_{int(60 * DT)}min_NORM.csv', f'labeled/NORM/W{int(HOURS_AHEAD * 2/DT)}H')
+
+    # clusts = prep.Utility.cluster_data(data, min_cluster_size=CLUSTER_SIZE)
     # for clust in clusts:
     #     img = calc_recurrence(clust, smooth=True)
     #     save_recurrence_plot(img, f'{clust["label"].values[0]}_{sym}_{CLUSTER_SIZE}_W{HOURS_AHEAD * 2 * 4}_15min_soft',

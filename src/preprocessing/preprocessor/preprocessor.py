@@ -63,7 +63,7 @@ class Preprocessor:
         :param sub_dir: name of subdir to save in. Defaults to None
         :return:
         '''
-        d = '' if not sub_dir else sub_dir
+        d = '' if not sub_dir else Path(sub_dir)
         new_path = self.out_dir / d
         filename = filename if filename.endswith('.csv') else filename + '.csv'
 
@@ -74,7 +74,7 @@ class Preprocessor:
 
     def save_image_to_file(self, arr: np.array, filename: str, sub_dir: str = None, extension: str = 'png'):
         '''
-        Saves a 2D-array as a binary mage to a path with provided filename. Iif subdir is not None, this should be a
+        Saves a 2D-array as a binary mage to a path with provided filename. If subdir is not None, this should be a
         path to a subdirectory to save the file to.
 
         :param arr: dataframe to save.
@@ -84,7 +84,7 @@ class Preprocessor:
         :return:
         '''
 
-        d = '' if not sub_dir else sub_dir
+        d = '' if not sub_dir else Path(sub_dir)
         new_path = self.out_dir / d
         filename = filename if filename.endswith('.' + extension) else filename + '.' + extension
 
