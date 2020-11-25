@@ -112,23 +112,18 @@ def save_recurrence_plot(arr: np.array, filename: str, subdir: str = None, exten
 
 
 syms = [d.name for d in (config.DATA_DIR / 'preprocessing' / 'raw').iterdir() if d.is_dir()]
-syms = ['LNC', 'AAPL', 'MSFT', 'NOV', 'MMM', 'IBM', 'GOOG', 'USB']
 
 for sym in syms:
     prog_bar.reset()
     prog_bar.set_description(sym, refresh=True)
     path = config.DATA_DIR / 'preprocessing' / 'raw' / sym
     data = import_and_trim(path)
+    comp = prep.DataLabeler.get_labels(data,smooth_result=2,return_full_computation=True)
+    prep.DataLabeler.plot_computations(comp)
     data = label(data)
     data = add_RSI(data)
     data = data.drop('time', axis=1)
     data2 = normalize(data)
-
-    data2 = trim_ends(data2)
-    data = trim_ends(data)
-
-    save_data(data, f'{sym}_W{int(HOURS_AHEAD * 2/DT)}H_{int(60 * DT)}min_ORIG.csv', f'labeled/ORIG/W{int(HOURS_AHEAD * 2/DT)}H')
-    save_data(data2, f'{sym}_W{int(HOURS_AHEAD * 2/DT)}H_{int(60 * DT)}min_NORM.csv', f'labeled/NORM/W{int(HOURS_AHEAD * 2/DT)}H')
 
     # clusts = prep.Utility.cluster_data(data, min_cluster_size=CLUSTER_SIZE)
     # for clust in clusts:

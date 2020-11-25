@@ -62,38 +62,51 @@ class _DataLabeler:
         return computation[labeler.R_COLS.lab].values if not return_full_computation else computation
 
     @staticmethod
-    def plot_computations(frame: pd.DataFrame):
+    def plot_computations(frame: pd.DataFrame, show_subplot='all'):
+        ''' Plots the intermediate calculations used in the computation of the labels.
+
+        :param frame: dataframe containing the computations.
+        :param show_subplot: which subplot to display. Supports 1, 2 or 'all'
+        '''
         sns.set()
 
-        fig, axes = plt.subplots(2, 1, sharex=True)
+        fig, axes = plt.subplots(2 if show_subplot == 'all' else 1, 1, sharex=True)
+        axes = (axes,) if show_subplot != 'all' else axes
 
-        s1 = pd.melt(frame=frame.reset_index(), id_vars='index', value_vars=['close', 'convolution result'])
-        plot = sns.lineplot(ax=axes[0], data=s1, x='index', y='value', hue='variable', legend='brief')
+        ax1 = axes[0] if (show_subplot == 'all' or show_subplot == 1) else None
+        ax2 = axes[1] if show_subplot == 'all' else axes[0] if show_subplot == 2 else None
 
-        lim1 = axes[0].get_ylim()
-        axes[0].fill_between(frame.index.values, frame['close'], lim1[0], where=frame['label'] == 'S',
-                             color='lightcoral', interpolate=True, label="Sell region")
-        axes[0].fill_between(frame.index.values, frame['close'], lim1[0], where=frame['label'] == 'B',
-                             color='yellowgreen', interpolate=True, label="Buy region")
-        axes[0].fill_between(frame.index.values, frame['close'], lim1[0], where=frame['label'] == 'H',
-                             color='gold', interpolate=True, alpha=0.5, label="Hold region")
 
-        s2 = pd.melt(frame=frame.reset_index(), id_vars='index', value_vars=['difference', 'median of difference'])
-        plot = sns.lineplot(ax=axes[1], data=s2, x='index', y='value', hue='variable', legend='brief')
+        if ax1:
+            s1 = pd.melt(frame=frame.reset_index(), id_vars='index', value_vars=['close', 'convolution result'])
+            plot = sns.lineplot(ax=ax1, data=s1, x='index', y='value', hue='variable', legend='brief')
 
-        lim1 = axes[0].get_ylim()
-        axes[1].fill_between(frame.index.values, frame['difference'], 0, where=frame['label'] == 'S',
-                             color='lightcoral', interpolate=True)
-        axes[1].fill_between(frame.index.values, frame['difference'], 0, where=frame['label'] == 'B',
-                             color='yellowgreen', interpolate=True)
-        axes[1].fill_between(frame.index.values, frame['difference'], 0, where=frame['label'] == 'H',
-                             color='gold', interpolate=True, alpha=0.5)
+            lim1 = ax1.get_ylim()
+            ax1.fill_between(frame.index.values, frame['close'], lim1[0], where=frame['label'] == 'S',
+                                 color='lightcoral', interpolate=True, label="Sell region")
+            ax1.fill_between(frame.index.values, frame['close'], lim1[0], where=frame['label'] == 'B',
+                                 color='yellowgreen', interpolate=True, label="Buy region")
+            ax1.fill_between(frame.index.values, frame['close'], lim1[0], where=frame['label'] == 'H',
+                                 color='gold', interpolate=True, alpha=0.5, label="Hold region")
+            lim1 = ax1.get_ylim()
+            ax1.set_xlim(left=frame.index.values[0], right=frame.index.values[-1])
+            ax1.set_ylim(lim1)
+            ax1.set_title('Close price and result')
 
-        plot.set(ylabel='Close price')
-        axes[0].set_xlim(left=frame.index.values[0], right=frame.index.values[-1])
-        axes[0].set_ylim(lim1)
+        if ax2:
+            s2 = pd.melt(frame=frame.reset_index(), id_vars='index', value_vars=['difference', 'median of difference'])
+            plot = sns.lineplot(ax=ax2, data=s2, x='index', y='value', hue='variable', legend='brief')
 
-        axes[0].set_title('Close price and result')
+            ax2.fill_between(frame.index.values, frame['difference'], 0, where=frame['label'] == 'S',
+                                 color='lightcoral', interpolate=True)
+            ax2.fill_between(frame.index.values, frame['difference'], 0, where=frame['label'] == 'B',
+                                 color='yellowgreen', interpolate=True)
+            ax2.fill_between(frame.index.values, frame['difference'], 0, where=frame['label'] == 'H',
+                                 color='gold', interpolate=True, alpha=0.5)
+            ax2.set_title('Difference from weighted running mean')
+
+
+        plot.set(ylabel='Close price difference')
         plt.xlabel('Time Index')
         fig.suptitle('Labeling using a cubic convolution window')
 

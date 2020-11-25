@@ -4,6 +4,8 @@ layout: page
 image: assets/img/normalization/normalization_all_AAPL.png
 image_desc: Normalization of the datapoint variables.
 categories:
+    - title: Pipeline
+      id: pipeline
     - title: Window size
       id: winsize
     - title: Parameters
@@ -11,8 +13,8 @@ categories:
     - title: Normalization
       id: normalization
 ---
-
-
+<div id="pipeline">
+</div>
 
 ## Pipeline
 The preprocessing pipeline consists of several stages. After the data has been [sourced](data-sourcing.md),
@@ -47,14 +49,14 @@ if we set it to 3 days since a bigger window would smooth out any small disturba
 
 ### Parameters
 All the parameters used in the preprocessing stage can be found in the *prep_config.py* module in *src/preprocessing/preprocessor*.
-Below is a table of explanations and values used for the preprocessing:
+Below is a table of explanations and values used for the preprocessing stage using a window of 260 (one trading week look ahead):
 
 |Parameter      |Value  |Description                                                                                                            |
 |:---|:---:|:---:|
 |$\texttt{DT}$             |0.25       |Number of hours between each datapoint in the raw data.                                                            |
 |$\texttt{LAB_CONV_FUNC}$  |'cubic'    |The convolution window to use for the labeler.                                                                     |
-|$\texttt{HOURS_AHEAD}$    |150        |Hours ahead used to determine the label points.                                                                    |
-|$\texttt{HOURS_BEHIND}$   |150        |Hours behind used in normalization.                                                                                |
+|$\texttt{HOURS_AHEAD}$    |32.5       |Hours ahead used to determine the label points.                                                                    |
+|$\texttt{HOURS_BEHIND}$   |32.5       |Hours behind used in normalization.                                                                                |
 |$\texttt{THRESH_BUY}$     |0.015      |Threshold for determining a buy point.                                                                             |
 |$\texttt{THRESH_SELL}$    |0.015      |Threshold for determining a sell point.                                                                            |
 |$\texttt{MED_WIN}$        |299        |Walking median window size for the custom labeler.                                                                 |
@@ -64,6 +66,11 @@ Below is a table of explanations and values used for the preprocessing:
 |$\texttt{REC_PERC}$       |10         |nth percentile for which distances in the phase plot fall under are considered in the recurrence plot.             |
 |$\texttt{REC_DIST_MET}$   |'euclidean'|Distance metric to use in the recurrence plots.                                                                    |
 |$\texttt{REC_ALPHA}$      |15         | Factor used in the exponential grayscale mapping of the distances over the nth percentile in the recurrence plot. |
+
+A dataset with a window of 52 was also created. For this set, $\texttt{HOURS_AHEAD}$ and $\texttt{HOURS_BEHIND}$ was both set to 6.5. The threshold values
+$\texttt{THRESH_BUY}$ and $\texttt{THRESH_SELL}$ was reduced to 0.01 for processing this. The reason for lowering the threshold
+values comes from the fact that a it is expected that a smalled window of investment means that each investment should yield
+a smaller absolute profit. 
 
 <div id="normalization">
 </div>
@@ -87,27 +94,4 @@ This results in a mean of 0 and points within one standard deviation at values a
 *modified modified* tanh normalizer (name pending) was used on all the data except for the RSI value which was divided
 by 100 to clamp it to the same interval as the other variables.
 
-### Clustering
-In order to convert the time-series data to images of the same resolution, successive data points with the same label
-are clustered together. Trimming all the clusters of size greater than *CLUSTER_SIZE* down to this value around their
-midpoint and discarding the rest, leaves clusters of equal size with the same label for all data points within.
 
-### Recurrence plots
-For the 2D convolutional neural network, [recurrence plots](https://en.wikipedia.org/wiki/Recurrence_plot) where created
-from the equally partitioned clusters of data. The idea is to have the network find patterns in the different regions
-which can be generalized during training. Visually inspecting the recurrence plots generated in this process seem to
-indicate that the data resembles the characteristics of brownian motion. This is expected, but not appreciated.
-
-There are two datasets created from the recurrence plots:
-1. **Hard recurrence**: This is the normal recurrence plot. Phase space distances below the nth percentile are shown as
-black pixels in the images. The rest are white.
-2. **Soft recurrence**: This is a proposed modification to the normal recurrence plots. Phase space distances below the nth percentile are shown as
-black pixels, while values over the nth percentile are exponentially mapped to values in the range \[1, 0\] where 1 is a black pixel and 0
-is a white pixel. This incorporates more information into the recurrence plot, but the significance of it has yet to be tested.
-
-
-Below are examples of how these plots differ. The dataset used is 125 hours (500 datapoints) of AAPL stock, year 2018:
-
-![](images/AAPL_HARD.png)   |  ![](images/AAPL_SOFT.png)
-:-------------------------: | :-------------------------:
-Hard recurrence             |  Soft recurrence
