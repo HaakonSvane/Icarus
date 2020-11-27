@@ -17,11 +17,14 @@ There are multiple folders in the repository. The table below explains all the d
 |----       |----           |listings   |       |Directory containing company listings.|
 |----       |----           |raw        |       |Raw sourced data from Alpha Vantage.|
 |----       |training       |labeled    |       |All labeled data (normalized and non-normalized). Files in the directory are normalized.|
-|----       |----           |----       |16H_WIN|Labeled data using a 16 hour window. Not normalized.|
-|----       |----           |----       |80H_WIN|Labeled data using a 80 hour window. Not normalized.|
+|----       |----           |----       |NORM   |All the labeled normalized data used for training.|
+|----       |----           |----       |ORIG   |All the labeled non-normalized data used for training.|
 |docs       |               |           |       |Source code for the website.|
 |models     |               |           |       |Source code for the neural networks models and results.|
-|----       | LNC           |           |       |Results from testing on the LNC equity using the several models and windows.|
+|----       |AAPL           |           |       |Network results from training on the AAPL (Apple Inc.) dataset.|
+|----       |GOOG           |           |       |Network results from training on the GOOG (Alphabet Inc.) dataset.|
+|----       |IBM            |           |       |Network results from training on the IBM (International Business Machines Corp.) dataset.|
+|----       |LNC            |           |       |Network results from training on the LNC (Lincoln National Corp.) dataset.|
 |src        |               |           |       |Source code for all the processing.|
 |----       |alphavantage   |           |       |API wrapper package for fetching data from Alpha Vantage. Contains a README.md.|
 |----       |preprocessing  |           |       |Preprocessor package for preprocessing the data. Contains a README.md.|

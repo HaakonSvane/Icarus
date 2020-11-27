@@ -1,6 +1,14 @@
 ---
 layout: default
 ---
+<style>
+  .small_vspace {
+     margin-bottom: 2mm;
+  }
+</style>
+
+
+
 <article class="post">
 
   <header class="post-header">
@@ -9,8 +17,10 @@ layout: default
       {% if page.image == true %}
         <a href="https://placeholder.com"><img src="https://via.placeholder.com/500"></a>
       {% else %}
-        <a href="{{ page.image }}"><img src="{{ page.image }}"></a>
-      <p align=center>{{ page.image_desc }}</p>
+        <div style="text-align: center">
+          <a href="{{ page.image }}"><img src="{{ page.image }}" align="center" class="small_vspace"></a>
+        </div>
+      <p align=center style="color: dimgray">{{ page.image_desc }}</p>
       {% endif %}
 
       {% if page.categories %}

@@ -108,7 +108,19 @@ class _Utility:
         plt.show()
 
     @staticmethod
-    def cluster_data(frame: pd.DataFrame, min_cluster_size: int = CLUSTER_SIZE, label_col_name: str = 'label'):
+    def cluster_data(frame: pd.DataFrame, min_cluster_size: int = CLUSTER_SIZE, label_col_name: str = 'label') -> List[
+        pd.DataFrame]:
+        '''For a dataframe with an associated labels column, this method finds all the clusters of the same labels
+        with size equal or greater than min_cluster_size. Clusters are temporal regions where one and the same label
+        reside. For clusters in the data that are larger than min_cluster_size, the cluster is trimmed down to this size
+        with the midpoints of the untrimmed cluster corresponding to the midpoint of the trimmed.
+
+        :param frame: DataFrame to cluster.
+        :param min_cluster_size: Minimum size of the clusters.
+        :param label_col_name: Name of the column to use for cluster detection. Defaults to 'label'.
+        :return: A list of DataFrames where each element corresponds to one cluster. All the clusters have size
+            min_cluster_size.
+        '''
         clusters = frame.groupby((frame[label_col_name].shift() != frame[label_col_name]).cumsum())
         valid = (clusters.size() >= min_cluster_size)
         valid = valid.index[valid].to_numpy()
@@ -148,6 +160,7 @@ class _Utility:
         '''
 
         y = frame.to_numpy(dtype=np.float)
+        y = y.reshape((-1,1)) if y.ndim == 1 else y
         # cdist calculates the distance from each point i to all other points j. The result is a matrix of distances
         # with zeros on the main diagonal since the distance form each point to itself is always zero.
         dist = cdist(y, y, metric=distance_metric)

@@ -1,6 +1,8 @@
 ---
 title: Preprocessing
 layout: page
+order: 3
+
 image: assets/img/normalization/normalization_all_AAPL.png
 image_desc: Normalization of the datapoint variables.
 categories:
@@ -13,6 +15,13 @@ categories:
     - title: Normalization
       id: normalization
 ---
+
+<style>
+  .small_vspace {
+     margin-bottom: 3mm;
+  }
+</style>
+
 <div id="pipeline">
 </div>
 
@@ -82,16 +91,34 @@ of *what* to normalize, then comes the determination of how to normalize it. We 
 closing price of a stock *C(t)* for some time *t*, but we would then need to determine how this is to be normalized.
 Extra care must also be taken so that no future information is incorporated into the normalizattion process.
 
-Normalization can have severe effects on the performance of networks. In
+#### Why normalize in the first place?
+From a technical perspective, normalizing the data before training can have drastic effects on training times. Multiple
+algorithms have shown to converge faster for data that in a small range. While training using gradient decent, one might
+encounter [exploding gradients](http://www.cs.toronto.edu/~rgrosse/courses/csc321_2017/readings/L15%20Exploding%20and%20Vanishing%20Gradients.pdf)
+if the features of the instance are grossly disproportionate. 
+
+Normalization can also have severe effects on the performance of neural networks. In
 [Efficient approach to Normalization of Multimodal Biometric Scores](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.259.2703&rep=rep1&type=pdf),
 the authors present multiple methods and the effects on them in neural networks. A popular normalization method is the
 *modified tanh* estimator. This has the advantage of using the standard deviation and mean of the dataset instead of using
 the [Hampel estimators](https://en.wikipedia.org/wiki/Redescending_M-estimator). It is thus faster and simpler than
-the normal tanh estimator, but has the same qualities such as robustness.
+the normal tanh estimator, but has the same qualities such as robustness. The modified tanh estimator is given by
 
-The modified tanh normalizer was again modified to yield an output range of \[-1, 1\].
-This results in a mean of 0 and points within one standard deviation at values around \[0.05, 0.05\]. This new
-*modified modified* tanh normalizer (name pending) was used on all the data except for the RSI value which was divided
-by 100 to clamp it to the same interval as the other variables.
+
+<div style="text-align:center" class="small_vspace">
+$x' = \frac{1}{2}(\tanh{(0.01\frac{x-\mu}{\sigma})}+1)$
+</div>
+
+
+The modified tanh normalizer was again modified to yield an output range of \[-1, 1\] and a mean of 0. The expression for
+this version is
+
+<div style="text-align:center" class="small_vspace">
+$x' = \tanh{(0.1\frac{x-\mu}{\sigma})}$
+</div>
+
+This new modified version also ensures that values within one standard deviation at maps to around \[0.1, 0.1\]. For the
+lack of a better name, lets call this the *modified modified* tanh normalizer. This was applied on all the data except
+for the RSI value which was divided by 100 (theoretical maximum value of the RSI).
 
 
