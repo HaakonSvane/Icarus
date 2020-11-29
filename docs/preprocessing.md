@@ -26,7 +26,7 @@ categories:
 </div>
 
 ## Pipeline
-The preprocessing pipeline consists of several stages. After the data has been [sourced](data-sourcing.md),
+The preprocessing pipeline consists of several stages. After the data has been sourced,
 it is processed through a series of stages. These are:
 
 1. Raw data gets loaded into memory.
@@ -76,10 +76,11 @@ Below is a table of explanations and values used for the preprocessing stage usi
 |$\texttt{REC_DIST_MET}$   |'euclidean'|Distance metric to use in the recurrence plots.                                                                    |
 |$\texttt{REC_ALPHA}$      |15         | Factor used in the exponential grayscale mapping of the distances over the nth percentile in the recurrence plot. |
 
-A dataset with a window of 52 was also created. For this set, $\texttt{HOURS_AHEAD}$ and $\texttt{HOURS_BEHIND}$ was both set to 6.5. The threshold values
-$\texttt{THRESH_BUY}$ and $\texttt{THRESH_SELL}$ was reduced to 0.01 for processing this. The reason for lowering the threshold
-values comes from the fact that a it is expected that a smalled window of investment means that each investment should yield
-a smaller absolute profit. 
+Note that since the networks where tested on two different sequence lengths, this table lists the parameters used for the 
+sequence length of 260. For the data with sequence lengths of 52, $\texttt{HOURS_AHEAD}$ is set to 6.5 (one trading day)
+and $\texttt{THRESH_BUY}$ and $\texttt{THRESH_SELL}$ is set to 0.01.
+The reason for lowering the threshold values comes from the fact that a it is expected that a smaller window of 
+investment means that each investment should yield a smaller absolute profit. Therefore, the threshold values should reflect this.
 
 <div id="normalization">
 </div>
@@ -110,6 +111,7 @@ $x' = \frac{1}{2}(\tanh{(0.01\frac{x-\mu}{\sigma})}+1)$
 </div>
 
 
+#### How was the data normalized?
 The modified tanh normalizer was again modified to yield an output range of \[-1, 1\] and a mean of 0. The expression for
 this version is
 
@@ -119,6 +121,16 @@ $x' = \tanh{(0.1\frac{x-\mu}{\sigma})}$
 
 This new modified version also ensures that values within one standard deviation at maps to around \[0.1, 0.1\]. For the
 lack of a better name, lets call this the *modified modified* tanh normalizer. This was applied on all the data except
-for the RSI value which was divided by 100 (theoretical maximum value of the RSI).
+for the RSI value which was divided by 100 (theoretical maximum value of the RSI). For the *high* and *low* price, these where
+first calculated to their differences from the average price within the 15 minute period. That is
+
+<div style="text-align:center" class="small_vspace">
+$\texttt{new_high}_i = \texttt{high}_i-\frac{\texttt{open}_i+\texttt{close}_i}{2}$
+</div>
+and
+<div style="text-align:center" class="small_vspace">
+$\texttt{new_low}_i = \texttt{low}_i-\frac{\texttt{open}_i+\texttt{close}_i}{2}$
+</div>
+
 
 

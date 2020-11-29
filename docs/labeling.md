@@ -8,13 +8,17 @@ categories:
       id: howto
     - title: The labeling stages
       id: stages
-    - title: Results
-      id: results
       
 image: assets/img/labeling/labeling_AAPL_2months.png
 image_desc: Some description.
 
 ---
+<style>
+  .small_vspace {
+     margin-bottom: 5mm;
+  }
+</style>
+
 <div id="howto">
 </div>
 
@@ -54,37 +58,63 @@ to buy and when to sell.
 
 If you decide to hold your position because you believe that at some time $t_f$, the price of a stock will yield even
 greater gains than selling 15 minutes into the future, you would still have to set some threshold value
-for when you would actually sell. Surely, waiting for an infinite amount of time is not a good idea. 
+for when you would actually sell. Surely, waiting for an infinite amount of time is not a good idea, but somewhere in
+between might be.
 
+For both scenarios, a threshold value must be set. This value determines when a region of time is a good time to sell and 
+when a region of time is a good time to buy. There is no guarantee that any region that is not a buying region must be a selling
+region, so this is therefore named a holding region. This region is works as an uncertainty period: A period where an
+investor is not comfortable making any decisions on whether to buy or sell. The threshold values can therefore be seen as
+*gut feel*-parameter (curtesy of my girlfriend).
 
-CHECK THIS!
-Since the determination of the labels for a price point $P(t)$ requires an insight into future values
-$P(t+n*\Delta t), n \in \mathbf{Z}^+$ where $\Delta t$ is the temporal resolution, the idea behind the new labeling 
-algorithm is to use convolutions with a weighted window to determine how a closing price $P(t)$ compares to future 
-prices. Multiple convolution windows was tried, but a cubic weighted window gave the best results. 
-The results of applying this window is shown in Figure~\ref{fig:conv_cubic}. 
-For a convolution window of size \texttt{WIN\_SIZE}, the \textit{look ahead} period for the labeler is
-$\texttt{WIN\_SIZE}/2$. 
-
-
-AND THIS!
-Due to fluctuations in the stock price over small time-scales, a smoothing factor is also applied to the closing price.
-This is a small simple average (flat convolution window of small size).
-This is done to even out the small-scale fluctuations in the price and give more coherent label regions.
 
 <div id="stages">
 </div>
 
 ## The labeling stages 
+Since the determination of the labels for a price point $P(t)$ requires an insight into future values
+$P(t+n*\Delta t), n \in \mathbf{Z}^+$ where $\Delta t$ is the temporal resolution, the main idea behind the new labeling 
+algorithm is to use convolutions with a weighted window to determine how a closing price $P(t)$ compares to future 
+prices. The labeling process can be boiled down to three stages:
 
 ### First stage
+This is the convolutional stage. Here, some weighted window is slid over the closing price data. If the window is biased
+towards future price values, the result of the convolution
+Multiple convolution windows was tried, but a cubic weighted window gave the best results. 
+The results of applying this window is shown in the figure below. 
+For a convolution window of size $\texttt{WIN\_SIZE}$, the $\textit{look ahead}$ period for the labeler is
+$\texttt{WIN\_SIZE}/2$. 
+
+![First stage AAPL](assets/img/labeling/conv_AAPL_1.png)
+<div style="text-align:center;color:dimgray" class="small_vspace">
+First stage of the labeling process on AAPL stock over ~26 trading days.
+</div>
+
 
 ### Second stage
+The second stage is the differencing and median stage. Here, the difference between the actual close price and the results
+from stage 1 is computed and a sliding median window with size $\texttt{MED_WIN}$ is applied across the difference. The reason
+for choosing a median window instead of a normal simple window is that we don't want sudden spikes to influence the averaging
+too much. The results of applying this stage of calculations is shown in the figure below.
+
+![Second stage AAPL](assets/img/labeling/conv_AAPL_2.png)
+<div style="text-align:center;color:dimgray" class="small_vspace">
+Second stage of the labeling process on AAPL stock over ~26 trading days.
+</div>
 
 ### Third stage
+The final stage of the labeling process is to compare the results from the sliding median to the initial closing price.
+The fraction $\texttt{med_res}_i / \texttt{close}_i = \alpha$ is compared to the threshold values $\texttt{THRESH_BUY}$
+and $\texttt{THRESH_SELL}$ to determine what label to give the instance. 
+Due to fluctuations in the stock price over small time-scales, a smoothing factor is also applied to the closing price.
+This is a small simple average (flat convolution window of small size). By introducing this smoothing factor to the data before
+determining $\alpha$, the labeling regions are more coherent which will be useful later in the project.
+The final results of the labeler is shown in the figure below.
 
-
-## Results
+![Third stage AAPL](assets/img/labeling/conv_AAPL_3.png)
+<div style="text-align:center;color:dimgray" class="small_vspace">
+Third stage of the labeling process on AAPL stock over ~26 trading days.
+</div>
 
 
 [^1]: Whether or not this is a truly random process will not be discussed here, but it should be noted that the
